@@ -1,0 +1,82 @@
+first i create a folder event-booking-system
+then i create two one is frontend and backend
+BACKEND : 
+1) In backend i install  ->npm init -y [install package.json]
+                         ->npm install express[install express]
+                         ->then i create server.js and it is successfully running
+2) Connent mysql as I have already i install mysql and work bench 
+                        ->CREATE DATABASE event_booking; [database created]
+                        ->USE event_booking; [use the database]
+                        ->CREATE TABLE users (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            name VARCHAR(100),
+                            email VARCHAR(100),
+                            role VARCHAR(20)
+                            );
+                        ->CREATE TABLE events (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            title VARCHAR(100),
+                            date DATE,
+                            venue VARCHAR(100),
+                            total_seats INT
+                            );
+                        ->CREATE TABLE bookings (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            user_id INT,
+                            event_id INT,
+                            seat_number VARCHAR(10),
+                            FOREIGN KEY (user_id) REFERENCES users(id),
+                            FOREIGN KEY (event_id) REFERENCES events(id)
+                            );
+                        ->SHOW TABLES; [checked the table that is created]
+3) connect nodejs and mysql 
+                        ->npm install mysql2    
+                        ->then i create a file db.js[connect database]                    
+                        ->then i add a line to connect db require in server.js
+                        ->then database is successfully connected
+4) next i install postman ->Postman is used to test your backend APIs without building frontend
+5) In postman ->URL set
+              ->Body → raw → JSON
+              ->Paste JSON
+              ->Send
+6)  Step 1: You sent data using Postman
+                ->I told server: “Add this event”
+    Step 2: Your backend (Node.js) received it
+                ->app.post('/add-event', ...) [This means: If someone calls /add-event 
+                  Run this function]
+    Step 3: Backend saved data in DB
+                ->INSERT INTO events ... [Now data is stored permanently]
+    Step 4: You fetched data
+                ->app.get('/events', ...) [This means:“Give me all events”]
+7) i now check the booking that is if i select a seat and book mean it is booked then another user again come and select the same seat means it tell already seat is booked
+8) now i can  check bookings seat only
+9) now i get a flow of 
+                ->Create event
+                ->Add user
+                ->Book ticket
+                ->View bookings
+FINAL I LEARN :            
+    1. API creation
+    2. Database connection
+    3. Foreign keys
+    4. Real-world logic (seat booking)
+    5. Testing using Postman
+APIs :
+    1.Add Event
+        ->POST /add-event
+    2.Get Events
+        ->GET /events
+    3.Book Ticket
+        ->POST /book-ticket
+    4.Get Bookings
+        ->GET /bookings
+    5.Available Seats
+        ->GET /available-seats/:id
+
+
+FRONTEND:
+1) in my project foder i install react ->npx create-react-app frontend [this will create react]
+2) then i give-> cd frontend
+              -> npm start
+              ->then i change the port 3000 to 3001 because backend will run in 3000 so i change 3001 so frontend run in 3001 .
+3) Open src/App.js
