@@ -80,3 +80,11 @@ FRONTEND:
               -> npm start
               ->then i change the port 3000 to 3001 because backend will run in 3000 so i change 3001 so frontend run in 3001 .
 3) Open src/App.js
+
+
+
+git add .
+git push
+git remote add origin https://github.com/osamarahmani/Event-Management-Ticket-Booking-System.git
+git branch -M main
+git push -u origin main

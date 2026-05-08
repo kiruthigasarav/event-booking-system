@@ -150,3 +150,23 @@ app.put('/update-event/:id', (req, res) => {
         res.send('Event updated');
     });
 });
+
+app.delete('/delete-event/:id', (req, res) => {
+    const id = req.params.id;
+
+    // Step 1: delete bookings first
+    const deleteBookings = 'DELETE FROM bookings WHERE event_id = ?';
+
+    db.query(deleteBookings, [id], (err) => {
+        if (err) return res.send('Error deleting bookings');
+
+        // Step 2: delete event
+        const deleteEvent = 'DELETE FROM events WHERE id = ?';
+
+        db.query(deleteEvent, [id], (err) => {
+            if (err) return res.send('Error deleting event');
+
+            res.send('Event deleted successfully');
+        });
+    });
+});
