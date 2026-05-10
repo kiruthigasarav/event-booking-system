@@ -1,6 +1,6 @@
 const mysql = require("mysql2");
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.MYSQLHOST,
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
@@ -8,11 +8,13 @@ const db = mysql.createConnection({
     port: process.env.MYSQLPORT
 });
 
-db.connect((err) => {
+// test connection
+db.getConnection((err, connection) => {
     if (err) {
         console.log("DB connection failed:", err);
     } else {
-        console.log("Connected to database");
+        console.log("Connected to Railway MySQL");
+        connection.release();
     }
 });
 
