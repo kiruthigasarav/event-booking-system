@@ -2,9 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
-  Route,
+ Route,
   Link
 } from "react-router-dom";
+
+/* ================= BACKEND URL ================= */
+
+const API = "https://event-booking-system-production.up.railway.app";
 
 /* ================= EVENTS PAGE ================= */
 
@@ -21,14 +25,19 @@ function EventsPage({ role, userId }) {
 
   const [editingEvent, setEditingEvent] = useState(null);
 
-  const API = "https://event-booking-system-hjrv.onrender.com";
-
   // LOAD EVENTS
-  useEffect(() => {
+  const loadEvents = () => {
     fetch(`${API}/events`)
       .then((res) => res.json())
       .then((data) => setEvents(data))
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        alert("Backend connection error");
+      });
+  };
+
+  useEffect(() => {
+    loadEvents();
   }, []);
 
   // ADD EVENT
@@ -43,7 +52,15 @@ function EventsPage({ role, userId }) {
       .then((res) => res.text())
       .then((data) => {
         alert(data);
-        window.location.reload();
+
+        setNewEvent({
+          title: "",
+          date: "",
+          venue: "",
+          total_seats: ""
+        });
+
+        loadEvents();
       })
       .catch((err) => console.log(err));
   };
@@ -56,7 +73,7 @@ function EventsPage({ role, userId }) {
       .then((res) => res.text())
       .then((data) => {
         alert(data);
-        window.location.reload();
+        loadEvents();
       })
       .catch((err) => console.log(err));
   };
@@ -64,7 +81,13 @@ function EventsPage({ role, userId }) {
   // EDIT EVENT
   const editEvent = (event) => {
     setEditingEvent(event);
-    setNewEvent(event);
+
+    setNewEvent({
+      title: event.title,
+      date: event.date,
+      venue: event.venue,
+      total_seats: event.total_seats
+    });
   };
 
   // UPDATE EVENT
@@ -79,7 +102,17 @@ function EventsPage({ role, userId }) {
       .then((res) => res.text())
       .then((data) => {
         alert(data);
-        window.location.reload();
+
+        setEditingEvent(null);
+
+        setNewEvent({
+          title: "",
+          date: "",
+          venue: "",
+          total_seats: ""
+        });
+
+        loadEvents();
       })
       .catch((err) => console.log(err));
   };
@@ -242,8 +275,6 @@ function EventsPage({ role, userId }) {
 function BookingsPage({ userId }) {
   const [bookings, setBookings] = useState([]);
 
-  const API = "https://event-booking-system-hjrv.onrender.com";
-
   const loadBookings = () => {
     fetch(`${API}/my-bookings/${userId}`)
       .then((res) => res.json())
@@ -367,21 +398,19 @@ const overlay = {
 
 const mainTitle = {
   fontSize: "40px",
-  fontWeight: "bold",
-  margin: 0
+  fontWeight: "bold"
 };
 
 const topBar = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  flexWrap: "wrap",
-  gap: "15px"
+  flexWrap: "wrap"
 };
 
 const nav = {
-  marginTop: "25px",
-  marginBottom: "25px",
+  marginTop: "20px",
+  marginBottom: "20px",
   display: "flex",
   gap: "15px"
 };
@@ -399,8 +428,7 @@ const formBox = {
   background: "rgba(255,255,255,0.12)",
   padding: "25px",
   borderRadius: "20px",
-  marginBottom: "30px",
-  boxShadow: "0 5px 20px rgba(0,0,0,0.2)"
+  marginBottom: "30px"
 };
 
 const inputGrid = {
@@ -417,16 +445,14 @@ const input = {
   border: "none",
   outline: "none",
   fontSize: "18px",
-  width: "90%",
-  marginTop: "10px"
+  width: "90%"
 };
 
 const select = {
   padding: "12px",
   borderRadius: "12px",
   border: "none",
-  fontSize: "20px",
-  fontWeight: "bold"
+  fontSize: "18px"
 };
 
 const primaryBtn = {
@@ -438,8 +464,7 @@ const primaryBtn = {
   borderRadius: "12px",
   fontWeight: "bold",
   cursor: "pointer",
-  marginTop: "10px",
-  fontSize: "18px"
+  marginTop: "10px"
 };
 
 const deleteBtn = {
@@ -449,8 +474,7 @@ const deleteBtn = {
   padding: "10px 16px",
   borderRadius: "10px",
   marginRight: "10px",
-  cursor: "pointer",
-  fontWeight: "bold"
+  cursor: "pointer"
 };
 
 const editBtn = {
@@ -459,8 +483,7 @@ const editBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  cursor: "pointer",
-  fontWeight: "bold"
+  cursor: "pointer"
 };
 
 const heading = {
@@ -478,30 +501,26 @@ const eventGrid = {
 const eventCard = {
   background: "rgba(255,255,255,0.12)",
   borderRadius: "20px",
-  padding: "22px",
-  boxShadow: "0 6px 20px rgba(0,0,0,0.25)"
+  padding: "22px"
 };
 
 const bookingCard = {
   background: "rgba(255,255,255,0.12)",
   borderRadius: "20px",
-  padding: "22px",
-  boxShadow: "0 6px 20px rgba(0,0,0,0.25)"
+  padding: "22px"
 };
 
 const cardTop = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "10px"
+  alignItems: "center"
 };
 
 const badge = {
   background: "#f59e0b",
   color: "white",
   padding: "6px 12px",
-  borderRadius: "30px",
-  fontWeight: "bold"
+  borderRadius: "30px"
 };
 
 const seatBadge = {
@@ -509,8 +528,7 @@ const seatBadge = {
   background: "#10b981",
   padding: "10px",
   borderRadius: "12px",
-  display: "inline-block",
-  fontWeight: "bold"
+  display: "inline-block"
 };
 
 const dateText = {
