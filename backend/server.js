@@ -1,7 +1,9 @@
 const cors = require('cors');//connenct frontend
 const express = require('express');
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: '*'
+}));
 const db = require('./db');
 
 app.use(express.json());
@@ -19,9 +21,10 @@ app.post('/add-event', (req, res) => {
         }
     });
 });
+const PORT = process.env.PORT || 3000;
 
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 //  Get All Events
