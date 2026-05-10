@@ -173,3 +173,6 @@ app.delete('/delete-event/:id', (req, res) => {
         });
     });
 });
+app.get('/', (req, res) => {
+    res.send('Backend Running Successfully');
+});
