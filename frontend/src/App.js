@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 
 /* ================= BACKEND URL ================= */
-const API = "https://event-booking-system-production-5332.up.railway.app";
+const API = "https://event-booking-system-production-f3bb.up.railway.app";
 /* ================= EVENTS PAGE ================= */
 
 function EventsPage({ role, userId }) {
