@@ -10,7 +10,6 @@ import {
 // const API = "https://event-booking-system-production-f3bb.up.railway.app";
 /* ================= EVENTS PAGE ================= */
 const API = "https://event-booking-system-hjrv.onrender.com";
-
 function EventsPage({ role, userId }) {
   const [events, setEvents] = useState([]);
   const [seats, setSeats] = useState({});
