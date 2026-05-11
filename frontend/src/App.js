@@ -7,8 +7,9 @@ import {
 } from "react-router-dom";
 
 /* ================= BACKEND URL ================= */
-const API = "https://event-booking-system-production-f3bb.up.railway.app";
+// const API = "https://event-booking-system-production-f3bb.up.railway.app";
 /* ================= EVENTS PAGE ================= */
+const API = "https://event-booking-system-hjrv.onrender.com";
 
 function EventsPage({ role, userId }) {
   const [events, setEvents] = useState([]);
