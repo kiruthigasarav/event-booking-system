@@ -5,7 +5,9 @@ import {
  Route,
   Link
 } from "react-router-dom";
-
+import Login from "./Login";
+import Register from "./Register";
+import ProtectedRoute from "./ProtectedRoute";
 /* ================= BACKEND URL ================= */
 // const API = "https://event-booking-system-production-f3bb.up.railway.app";
 /* ================= EVENTS PAGE ================= */
@@ -353,23 +355,33 @@ function App() {
           </nav>
 
           <Routes>
-            <Route
-              path="/"
-              element={
-                <EventsPage
-                  role={role}
-                  userId={userId}
-                />
-              }
-            />
 
-            <Route
-              path="/bookings"
-              element={
-                <BookingsPage userId={userId} />
-              }
-            />
-          </Routes>
+  <Route path="/login" element={<Login />} />
+
+  <Route path="/register" element={<Register />} />
+
+  <Route
+    path="/"
+    element={
+      <ProtectedRoute>
+        <EventsPage
+          role={role}
+          userId={userId}
+        />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/bookings"
+    element={
+      <ProtectedRoute>
+        <BookingsPage userId={userId} />
+      </ProtectedRoute>
+    }
+  />
+
+</Routes>
         </div>
       </div>
     </BrowserRouter>

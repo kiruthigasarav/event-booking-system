@@ -7,6 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
 app.get("/", (req, res) => {
     res.send("Backend Running Successfully");
 });
@@ -161,3 +165,92 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+app.post("/register", async (req, res) => {
+    const { name, email, password, role } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql =
+        "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
+
+    db.query(
+        sql,
+        [name, email, hashedPassword, role],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).send("Registration failed");
+            }
+
+            res.send("User registered successfully");
+        }
+    );
+});
+
+
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    db.query(
+        "SELECT * FROM users WHERE email=?",
+        [email],
+        async (err, result) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).send("Login failed");
+            }
+
+            if (result.length === 0) {
+                return res.status(401).send("User not found");
+                 }
+
+            const user = result[0];
+
+            const validPassword = await bcrypt.compare(
+                password,
+                user.password
+            );
+
+            if (!validPassword) {
+                return res.status(401).send("Invalid password");
+            }
+
+            const token = jwt.sign(
+                {
+                    id: user.id,
+                    role: user.role
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: "1d"
+                }
+            );
+
+            res.json({
+                token,
+                user
+            });
+        }
+    );
+});
+
+function verifyToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+
+    if (!authHeader) {
+        return res.status(403).send("Token required");
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send("Invalid token");
+        }
+
+        req.user = decoded;
+        next();
+    });
+}
