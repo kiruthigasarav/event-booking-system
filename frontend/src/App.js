@@ -543,15 +543,17 @@ const overlay = {
 };
 
 const mainTitle = {
-  fontSize: "40px",
-  fontWeight: "bold"
+  fontSize: "55px",
+  fontWeight: "bold",
+  margin: 0
 };
 
 const topBar = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  flexWrap: "wrap"
+  flexWrap: "wrap",
+  gap: "20px"
 };
 
 const nav = {
@@ -574,15 +576,18 @@ const formBox = {
   background: "rgba(255,255,255,0.12)",
   padding: "25px",
   borderRadius: "20px",
-  marginBottom: "30px"
+  marginBottom: "30px",
+  width: "100%",
+  boxSizing: "border-box"
 };
 
 const inputGrid = {
   display: "grid",
   gridTemplateColumns:
-    "repeat(auto-fit, minmax(220px,1fr))",
-  gap: "15px",
-  marginBottom: "20px"
+    "repeat(auto-fit, minmax(250px,1fr))",
+  gap: "20px",
+  marginBottom: "20px",
+  width: "100%"
 };
 
 const input = {
@@ -591,7 +596,8 @@ const input = {
   border: "none",
   outline: "none",
   fontSize: "18px",
-  width: "90%"
+  width: "100%",
+  boxSizing: "border-box"
 };
 
 const primaryBtn = {

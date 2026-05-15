@@ -469,24 +469,20 @@ app.get(
     "/organizer-bookings/:organizer_id",
     (req, res) => {
 
-        const sql =
-            `
-            SELECT
-            users.name,
-            users.email,
-            events.title,
-            bookings.seat_number
-
+        const sql = `
+            SELECT 
+                bookings.id,
+                users.name,
+                users.email,
+                events.title,
+                bookings.seat_number
             FROM bookings
-
             JOIN users
-            ON bookings.user_id = users.id
-
+                ON bookings.user_id = users.id
             JOIN events
-            ON bookings.event_id = events.id
-
+                ON bookings.event_id = events.id
             WHERE events.organizer_id = ?
-            `;
+        `;
 
         db.query(
             sql,
@@ -494,13 +490,13 @@ app.get(
             (err, result) => {
 
                 if (err) {
-
                     console.log(err);
 
-                    return res.status(500).json({
-                        message:
+                    return res
+                        .status(500)
+                        .send(
                             "Error fetching organizer bookings"
-                    });
+                        );
                 }
 
                 res.json(result);
