@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
-  Route,
+ Route,
   Link
 } from "react-router-dom";
 
@@ -451,7 +451,10 @@ function BookingsPage({ user }) {
       .then((res) => res.json())
       .then((data) =>
         setBookings(data)
-      );
+      )
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   useEffect(() => {
@@ -542,6 +545,10 @@ function App() {
 
                     localStorage.removeItem(
                       "user"
+                    );
+
+                    localStorage.removeItem(
+                      "token"
                     );
 
                     window.location.href =
