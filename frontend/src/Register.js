@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 
-const API = "https://event-booking-system-hjrv.onrender.com";
+import {
+    useNavigate,
+    Link
+} from "react-router-dom";
+
+const API =
+    "https://event-booking-system-hjrv.onrender.com";
 
 function Register() {
 
@@ -18,112 +23,86 @@ function Register() {
 
         try {
 
-            const response = await fetch(`${API}/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(form)
-            });
+            const response = await fetch(
+                `${API}/register`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify(form)
+                }
+            );
 
-            const data = await response.json();
+            const data =
+                await response.json();
 
-            if (response.ok) {
+            alert(data.message);
 
-                alert(data.message);
+            if (
+                data.message ===
+                "User registered successfully"
+            ) {
 
                 navigate("/login");
-
-            } else {
-
-                alert(data.message);
             }
 
         } catch (error) {
 
             console.log(error);
-            alert("Registration failed");
+
+            alert("Server Error");
         }
     };
 
     return (
 
-        <div
-            style={{
-                minHeight: "100vh",
-                background:
-                    "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                fontFamily: "Poppins, sans-serif"
-            }}
-        >
+        <div style={container}>
 
-            <div
-                style={{
-                    background: "rgba(255,255,255,0.08)",
-                    padding: "40px",
-                    borderRadius: "20px",
-                    width: "400px",
-                    backdropFilter: "blur(10px)",
-                    color: "white"
-                }}
-            >
+            <div style={box}>
 
-                <h1
-                    style={{
-                        textAlign: "center",
-                        marginBottom: "30px"
-                    }}
-                >
+                <h2 style={title}>
                     Register
-                </h1>
+                </h2>
 
                 <input
                     style={input}
-                    type="text"
-                    placeholder="Enter Name"
-                    value={form.name}
+                    placeholder="Name"
                     onChange={(e) =>
                         setForm({
                             ...form,
-                            name: e.target.value
+                            name:
+                                e.target.value
                         })
                     }
                 />
-
-                <br /><br />
 
                 <input
                     style={input}
                     type="email"
-                    placeholder="Enter Email"
-                    value={form.email}
+                    placeholder="Email"
                     onChange={(e) =>
                         setForm({
                             ...form,
-                            email: e.target.value
+                            email:
+                                e.target.value
                         })
                     }
                 />
-
-                <br /><br />
 
                 <input
                     style={input}
                     type="password"
-                    placeholder="Enter Password"
-                    value={form.password}
+                    placeholder="Password"
                     onChange={(e) =>
                         setForm({
                             ...form,
-                            password: e.target.value
+                            password:
+                                e.target.value
                         })
                     }
                 />
-
-                <br /><br />
 
                 <select
                     style={input}
@@ -131,16 +110,24 @@ function Register() {
                     onChange={(e) =>
                         setForm({
                             ...form,
-                            role: e.target.value
+                            role:
+                                e.target.value
                         })
                     }
                 >
-                    <option value="admin">Admin</option>
-                    <option value="organizer">Organizer</option>
-                    <option value="attendee">Attendee</option>
-                </select>
+                    <option value="admin">
+                        Admin
+                    </option>
 
-                <br /><br />
+                    <option value="organizer">
+                        Organizer
+                    </option>
+
+                    <option value="attendee">
+                        Attendee
+                    </option>
+
+                </select>
 
                 <button
                     style={button}
@@ -149,31 +136,18 @@ function Register() {
                     Register
                 </button>
 
-                <p
-                    style={{
-                        marginTop: "20px",
-                        textAlign: "center"
-                    }}
-                >
-                    Already have an account?
-                </p>
+                <p style={text}>
 
-                <div
-                    style={{
-                        textAlign: "center"
-                    }}
-                >
+                    Already have account?
+
                     <Link
                         to="/login"
-                        style={{
-                            color: "#38bdf8",
-                            textDecoration: "none",
-                            fontWeight: "bold"
-                        }}
+                        style={link}
                     >
-                        Login Here
+                        Login
                     </Link>
-                </div>
+
+                </p>
 
             </div>
 
@@ -181,9 +155,39 @@ function Register() {
     );
 }
 
+/* ================= CSS ================= */
+
+const container = {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background:
+        "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)"
+};
+
+const box = {
+    background:
+        "rgba(255,255,255,0.08)",
+    padding: "40px",
+    borderRadius: "20px",
+    width: "350px",
+    backdropFilter: "blur(10px)",
+    boxShadow:
+        "0 8px 32px rgba(0,0,0,0.3)"
+};
+
+const title = {
+    color: "white",
+    textAlign: "center",
+    marginBottom: "25px",
+    fontSize: "35px"
+};
+
 const input = {
     width: "100%",
     padding: "14px",
+    marginBottom: "20px",
     borderRadius: "12px",
     border: "none",
     outline: "none",
@@ -198,9 +202,22 @@ const button = {
     background:
         "linear-gradient(135deg,#06b6d4,#3b82f6)",
     color: "white",
-    fontWeight: "bold",
     fontSize: "18px",
+    fontWeight: "bold",
     cursor: "pointer"
+};
+
+const text = {
+    color: "white",
+    marginTop: "20px",
+    textAlign: "center"
+};
+
+const link = {
+    color: "#38bdf8",
+    marginLeft: "8px",
+    textDecoration: "none",
+    fontWeight: "bold"
 };
 
 export default Register;

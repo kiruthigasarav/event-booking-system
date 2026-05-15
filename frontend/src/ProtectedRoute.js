@@ -1,16 +1,21 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
 
-function ProtectedRoute({ children }) {
+import {
+    Navigate
+} from "react-router-dom";
 
-    const token = localStorage.getItem("token");
+function ProtectedRoute({
+    children
+}) {
 
-    // IF TOKEN NOT FOUND
-    if (!token) {
+    const user =
+        localStorage.getItem("user");
+
+    if (!user) {
+
         return <Navigate to="/login" />;
     }
 
-    // IF TOKEN EXISTS
     return children;
 }
 

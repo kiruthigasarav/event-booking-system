@@ -8,23 +8,18 @@ const API =
     "https://event-booking-system-hjrv.onrender.com";
 
 function Login() {
-    const navigate = useNavigate();
 
     const [form, setForm] = useState({
         email: "",
         password: ""
     });
 
+    const navigate = useNavigate();
+
     const login = async () => {
-        if (
-            !form.email ||
-            !form.password
-        ) {
-            alert("Fill all fields");
-            return;
-        }
 
         try {
+
             const response = await fetch(
                 `${API}/login`,
                 {
@@ -41,6 +36,7 @@ function Login() {
                 await response.json();
 
             if (data.success) {
+
                 localStorage.setItem(
                     "user",
                     JSON.stringify(data.user)
@@ -51,38 +47,39 @@ function Login() {
                     data.token
                 );
 
-                alert("Login Successful");
+                alert(
+                    "Login Successful"
+                );
 
                 navigate("/");
+
             } else {
-                alert(
-                    data.message ||
-                        "Login failed"
-                );
+
+                alert(data.message);
             }
+
         } catch (error) {
+
             console.log(error);
 
-            alert("Server error");
+            alert("Server Error");
         }
     };
 
     return (
-        <div style={container}>
-            <div style={box}>
-                <h1 style={title}>
-                    🎟 Event Booking
-                </h1>
 
-                <h2 style={heading}>
+        <div style={container}>
+
+            <div style={box}>
+
+                <h2 style={title}>
                     Login
                 </h2>
 
                 <input
                     style={input}
                     type="email"
-                    placeholder="Enter Email"
-                    value={form.email}
+                    placeholder="Email"
                     onChange={(e) =>
                         setForm({
                             ...form,
@@ -95,8 +92,7 @@ function Login() {
                 <input
                     style={input}
                     type="password"
-                    placeholder="Enter Password"
-                    value={form.password}
+                    placeholder="Password"
                     onChange={(e) =>
                         setForm({
                             ...form,
@@ -114,16 +110,20 @@ function Login() {
                 </button>
 
                 <p style={text}>
-                    Don't have account?
+
+                    Don't have an account?
+
+                    <Link
+                        to="/register"
+                        style={link}
+                    >
+                        Register
+                    </Link>
+
                 </p>
 
-                <Link
-                    style={linkBtn}
-                    to="/register"
-                >
-                    Register Here
-                </Link>
             </div>
+
         </div>
     );
 }
@@ -136,37 +136,31 @@ const container = {
     justifyContent: "center",
     alignItems: "center",
     background:
-        "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)",
-    fontFamily: "Poppins, sans-serif"
+        "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)"
 };
 
 const box = {
-    width: "400px",
     background:
         "rgba(255,255,255,0.08)",
-    backdropFilter: "blur(12px)",
     padding: "40px",
-    borderRadius: "25px",
-    color: "white",
+    borderRadius: "20px",
+    width: "350px",
+    backdropFilter: "blur(10px)",
     boxShadow:
-        "0 8px 32px rgba(0,0,0,0.3)",
-    textAlign: "center"
+        "0 8px 32px rgba(0,0,0,0.3)"
 };
 
 const title = {
-    fontSize: "38px",
-    marginBottom: "10px"
-};
-
-const heading = {
+    color: "white",
+    textAlign: "center",
     marginBottom: "25px",
-    fontSize: "30px"
+    fontSize: "35px"
 };
 
 const input = {
     width: "100%",
     padding: "14px",
-    marginBottom: "18px",
+    marginBottom: "20px",
     borderRadius: "12px",
     border: "none",
     outline: "none",
@@ -187,15 +181,16 @@ const button = {
 };
 
 const text = {
+    color: "white",
     marginTop: "20px",
-    marginBottom: "10px"
+    textAlign: "center"
 };
 
-const linkBtn = {
+const link = {
     color: "#38bdf8",
+    marginLeft: "8px",
     textDecoration: "none",
-    fontWeight: "bold",
-    fontSize: "18px"
+    fontWeight: "bold"
 };
 
 export default Login;

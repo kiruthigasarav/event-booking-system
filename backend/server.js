@@ -20,77 +20,97 @@ app.get("/", (req, res) => {
 /* ================= REGISTER ================= */
 
 app.post("/register", async (req, res) => {
-    const {
-        name,
-        email,
-        password,
-        role
-    } = req.body;
 
-    if (
-        !name ||
-        !email ||
-        !password ||
-        !role
-    ) {
-        return res.send("All fields required");
-    }
+    try {
 
-    const checkUserSql =
-        "SELECT * FROM users WHERE email=?";
+        const {
+            name,
+            email,
+            password,
+            role
+        } = req.body;
 
-    db.query(
-        checkUserSql,
-        [email],
-        async (err, result) => {
-            if (err) {
-                console.log(err);
-                return res.send(
-                    "Database error"
-                );
-            }
+        const checkUser =
+            "SELECT * FROM users WHERE email=?";
 
-            if (result.length > 0) {
-                return res.send(
-                    "Email already exists"
-                );
-            }
+        db.query(
+            checkUser,
+            [email],
+            async (err, result) => {
 
-            const hashedPassword =
-                await bcrypt.hash(password, 10);
+                if (err) {
+                    console.log(err);
 
-            const sql =
-                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
-
-            db.query(
-                sql,
-                [
-                    name,
-                    email,
-                    hashedPassword,
-                    role
-                ],
-                (err2, result2) => {
-                    if (err2) {
-                        console.log(err2);
-                        return res.send(
-                            "Registration failed"
-                        );
-                    }
-
-                    res.send(
-                        "User registered successfully"
-                    );
+                    return res.status(500).json({
+                        message:
+                            "Database error"
+                    });
                 }
-            );
-        }
-    );
+
+                if (result.length > 0) {
+
+                    return res.status(400).json({
+                        message:
+                            "Email already exists"
+                    });
+                }
+
+                const hashedPassword =
+                    await bcrypt.hash(
+                        password,
+                        10
+                    );
+
+                const sql =
+                    `INSERT INTO users
+                    (name, email, password, role)
+                    VALUES (?, ?, ?, ?)`;
+
+                db.query(
+                    sql,
+                    [
+                        name,
+                        email,
+                        hashedPassword,
+                        role
+                    ],
+                    (err2, result2) => {
+
+                        if (err2) {
+
+                            console.log(err2);
+
+                            return res.status(500).json({
+                                message:
+                                    "Registration failed"
+                            });
+                        }
+
+                        res.json({
+                            message:
+                                "User registered successfully"
+                        });
+                    }
+                );
+            }
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
 });
 
 /* ================= LOGIN ================= */
 
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
+
+    const { email, password } =
+        req.body;
 
     const sql =
         "SELECT * FROM users WHERE email=?";
@@ -99,17 +119,25 @@ app.post("/login", (req, res) => {
         sql,
         [email],
         async (err, result) => {
+
             if (err) {
+
                 console.log(err);
-                return res.send(
-                    "Login failed"
-                );
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Database error"
+                });
             }
 
             if (result.length === 0) {
-                return res.send(
-                    "User not found"
-                );
+
+                return res.status(401).json({
+                    success: false,
+                    message:
+                        "User not found"
+                });
             }
 
             const user = result[0];
@@ -121,9 +149,12 @@ app.post("/login", (req, res) => {
                 );
 
             if (!validPassword) {
-                return res.send(
-                    "Invalid password"
-                );
+
+                return res.status(401).json({
+                    success: false,
+                    message:
+                        "Invalid password"
+                });
             }
 
             const token = jwt.sign(
@@ -139,6 +170,8 @@ app.post("/login", (req, res) => {
 
             res.json({
                 success: true,
+                message:
+                    "Login successful",
                 token,
                 user
             });
@@ -149,24 +182,32 @@ app.post("/login", (req, res) => {
 /* ================= EVENTS ================= */
 
 // GET EVENTS
-app.get("/events", (req, res) => {
-    db.query(
-        "SELECT * FROM events ORDER BY id DESC",
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                return res.send(
-                    "Error fetching events"
-                );
-            }
 
-            res.json(result);
+app.get("/events", (req, res) => {
+
+    const sql =
+        "SELECT * FROM events";
+
+    db.query(sql, (err, result) => {
+
+        if (err) {
+
+            console.log(err);
+
+            return res.status(500).json({
+                message:
+                    "Error fetching events"
+            });
         }
-    );
+
+        res.json(result);
+    });
 });
 
-// ADD EVENT
+/* ================= ADD EVENT ================= */
+
 app.post("/add-event", (req, res) => {
+
     const {
         title,
         date,
@@ -176,7 +217,10 @@ app.post("/add-event", (req, res) => {
     } = req.body;
 
     const sql =
-        "INSERT INTO events (title, date, venue, total_seats, organizer_id) VALUES (?, ?, ?, ?, ?)";
+        `INSERT INTO events
+        (title, date, venue,
+        total_seats, organizer_id)
+        VALUES (?, ?, ?, ?, ?)`;
 
     db.query(
         sql,
@@ -188,22 +232,29 @@ app.post("/add-event", (req, res) => {
             organizer_id
         ],
         (err, result) => {
+
             if (err) {
+
                 console.log(err);
-                return res.send(
-                    "Error adding event"
-                );
+
+                return res.status(500).json({
+                    message:
+                        "Error adding event"
+                });
             }
 
-            res.send(
-                "Event added successfully"
-            );
+            res.json({
+                message:
+                    "Event added successfully"
+            });
         }
     );
 });
 
-// UPDATE EVENT
+/* ================= UPDATE EVENT ================= */
+
 app.put("/update-event/:id", (req, res) => {
+
     const {
         title,
         date,
@@ -212,7 +263,12 @@ app.put("/update-event/:id", (req, res) => {
     } = req.body;
 
     const sql =
-        "UPDATE events SET title=?, date=?, venue=?, total_seats=? WHERE id=?";
+        `UPDATE events
+        SET title=?,
+        date=?,
+        venue=?,
+        total_seats=?
+        WHERE id=?`;
 
     db.query(
         sql,
@@ -224,51 +280,67 @@ app.put("/update-event/:id", (req, res) => {
             req.params.id
         ],
         (err, result) => {
+
             if (err) {
+
                 console.log(err);
-                return res.send(
-                    "Error updating event"
-                );
+
+                return res.status(500).json({
+                    message:
+                        "Error updating event"
+                });
             }
 
-            res.send(
-                "Event updated successfully"
-            );
+            res.json({
+                message:
+                    "Event updated successfully"
+            });
         }
     );
 });
 
-// DELETE EVENT
+/* ================= DELETE EVENT ================= */
+
 app.delete(
     "/delete-event/:id",
     (req, res) => {
+
         const id = req.params.id;
 
         db.query(
             "DELETE FROM bookings WHERE event_id=?",
             [id],
             (err) => {
+
                 if (err) {
+
                     console.log(err);
-                    return res.send(
-                        "Error deleting bookings"
-                    );
+
+                    return res.status(500).json({
+                        message:
+                            "Error deleting bookings"
+                    });
                 }
 
                 db.query(
                     "DELETE FROM events WHERE id=?",
                     [id],
                     (err2) => {
+
                         if (err2) {
+
                             console.log(err2);
-                            return res.send(
-                                "Error deleting event"
-                            );
+
+                            return res.status(500).json({
+                                message:
+                                    "Error deleting event"
+                            });
                         }
 
-                        res.send(
-                            "Event deleted successfully"
-                        );
+                        res.json({
+                            message:
+                                "Event deleted successfully"
+                        });
                     }
                 );
             }
@@ -279,34 +351,45 @@ app.delete(
 /* ================= BOOK TICKET ================= */
 
 app.post("/book-ticket", (req, res) => {
+
     const {
         user_id,
         event_id,
         seat_number
     } = req.body;
 
-    const checkSql =
-        "SELECT * FROM bookings WHERE event_id=? AND seat_number=?";
+    const checkSeat =
+        `SELECT * FROM bookings
+        WHERE event_id=?
+        AND seat_number=?`;
 
     db.query(
-        checkSql,
+        checkSeat,
         [event_id, seat_number],
         (err, result) => {
+
             if (err) {
+
                 console.log(err);
-                return res.send(
-                    "Error checking seat"
-                );
+
+                return res.status(500).json({
+                    message:
+                        "Error checking seat"
+                });
             }
 
             if (result.length > 0) {
-                return res.send(
-                    "Seat already booked"
-                );
+
+                return res.json({
+                    message:
+                        "Seat already booked"
+                });
             }
 
             const sql =
-                "INSERT INTO bookings (user_id, event_id, seat_number) VALUES (?, ?, ?)";
+                `INSERT INTO bookings
+                (user_id, event_id, seat_number)
+                VALUES (?, ?, ?)`;
 
             db.query(
                 sql,
@@ -316,16 +399,21 @@ app.post("/book-ticket", (req, res) => {
                     seat_number
                 ],
                 (err2, result2) => {
+
                     if (err2) {
+
                         console.log(err2);
-                        return res.send(
-                            "Error booking ticket"
-                        );
+
+                        return res.status(500).json({
+                            message:
+                                "Booking failed"
+                        });
                     }
 
-                    res.send(
-                        "Ticket booked successfully"
-                    );
+                    res.json({
+                        message:
+                            "Ticket booked successfully"
+                    });
                 }
             );
         }
@@ -337,29 +425,36 @@ app.post("/book-ticket", (req, res) => {
 app.get(
     "/my-bookings/:user_id",
     (req, res) => {
-        const sql = `
-        SELECT 
+
+        const sql =
+            `
+            SELECT
             e.title,
             e.venue,
-            b.seat_number,
-            u.name
-        FROM bookings b
-        JOIN events e 
-        ON b.event_id = e.id
-        JOIN users u
-        ON b.user_id = u.id
-        WHERE b.user_id = ?
-    `;
+            e.date,
+            b.seat_number
+
+            FROM bookings b
+
+            JOIN events e
+            ON b.event_id = e.id
+
+            WHERE b.user_id = ?
+            `;
 
         db.query(
             sql,
             [req.params.user_id],
             (err, result) => {
+
                 if (err) {
+
                     console.log(err);
-                    return res.send(
-                        "Error fetching bookings"
-                    );
+
+                    return res.status(500).json({
+                        message:
+                            "Error fetching bookings"
+                    });
                 }
 
                 res.json(result);
@@ -368,34 +463,44 @@ app.get(
     }
 );
 
-/* ================= ORGANIZER EVENT BOOKINGS ================= */
+/* ================= ORGANIZER BOOKINGS ================= */
 
 app.get(
-    "/event-bookings/:event_id",
+    "/organizer-bookings/:organizer_id",
     (req, res) => {
-        const sql = `
-        SELECT 
-            e.title,
-            u.name,
-            u.email,
-            b.seat_number
-        FROM bookings b
-        JOIN users u
-        ON b.user_id = u.id
-        JOIN events e
-        ON b.event_id = e.id
-        WHERE b.event_id = ?
-    `;
+
+        const sql =
+            `
+            SELECT
+            users.name,
+            users.email,
+            events.title,
+            bookings.seat_number
+
+            FROM bookings
+
+            JOIN users
+            ON bookings.user_id = users.id
+
+            JOIN events
+            ON bookings.event_id = events.id
+
+            WHERE events.organizer_id = ?
+            `;
 
         db.query(
             sql,
-            [req.params.event_id],
+            [req.params.organizer_id],
             (err, result) => {
+
                 if (err) {
+
                     console.log(err);
-                    return res.send(
-                        "Error fetching event bookings"
-                    );
+
+                    return res.status(500).json({
+                        message:
+                            "Error fetching organizer bookings"
+                    });
                 }
 
                 res.json(result);
@@ -404,12 +509,13 @@ app.get(
     }
 );
 
-/* ================= SERVER ================= */
+/* ================= START SERVER ================= */
 
 const PORT =
     process.env.PORT || 8080;
 
 app.listen(PORT, () => {
+
     console.log(
         `Server running on port ${PORT}`
     );
