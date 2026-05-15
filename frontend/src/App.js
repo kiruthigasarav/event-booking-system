@@ -17,7 +17,10 @@ const API = "https://event-booking-system-hjrv.onrender.com";
 function EventsPage({ role, userId }) {
 
   const [events, setEvents] = useState([]);
+
   const [seats, setSeats] = useState({});
+
+  const [eventBookings, setEventBookings] = useState([]);
 
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -26,16 +29,18 @@ function EventsPage({ role, userId }) {
     total_seats: ""
   });
 
-  const [editingEvent, setEditingEvent] =
-    useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
 
+  // LOAD EVENTS
   const loadEvents = () => {
 
     fetch(`${API}/events`)
       .then((res) => res.json())
       .then((data) => setEvents(data))
       .catch((err) => {
+
         console.log(err);
+
         alert("Backend connection error");
       });
   };
@@ -54,7 +59,9 @@ function EventsPage({ role, userId }) {
       },
       body: JSON.stringify(newEvent)
     })
+
       .then((res) => res.text())
+
       .then((data) => {
 
         alert(data);
@@ -67,7 +74,9 @@ function EventsPage({ role, userId }) {
         });
 
         loadEvents();
-      });
+      })
+
+      .catch((err) => console.log(err));
   };
 
   // DELETE EVENT
@@ -76,13 +85,17 @@ function EventsPage({ role, userId }) {
     fetch(`${API}/delete-event/${id}`, {
       method: "DELETE"
     })
+
       .then((res) => res.text())
+
       .then((data) => {
 
         alert(data);
 
         loadEvents();
-      });
+      })
+
+      .catch((err) => console.log(err));
   };
 
   // EDIT EVENT
@@ -101,17 +114,20 @@ function EventsPage({ role, userId }) {
   // UPDATE EVENT
   const updateEvent = () => {
 
-    fetch(
-      `${API}/update-event/${editingEvent.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newEvent)
-      }
-    )
+    fetch(`${API}/update-event/${editingEvent.id}`, {
+
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(newEvent)
+
+    })
+
       .then((res) => res.text())
+
       .then((data) => {
 
         alert(data);
@@ -126,7 +142,9 @@ function EventsPage({ role, userId }) {
         });
 
         loadEvents();
-      });
+      })
+
+      .catch((err) => console.log(err));
   };
 
   // BOOK TICKET
@@ -135,32 +153,56 @@ function EventsPage({ role, userId }) {
     const seat = seats[eventId];
 
     if (!seat) {
+
       alert("Enter seat number");
+
       return;
     }
 
     fetch(`${API}/book-ticket`, {
+
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       body: JSON.stringify({
         user_id: userId,
         event_id: eventId,
         seat_number: seat
       })
     })
+
       .then((res) => res.text())
+
       .then((data) => {
+
         alert(data);
-      });
+      })
+
+      .catch((err) => console.log(err));
+  };
+
+  // LOAD EVENT BOOKINGS
+  const loadEventBookings = (eventId) => {
+
+    fetch(`${API}/event-bookings/${eventId}`)
+
+      .then((res) => res.json())
+
+      .then((data) => {
+
+        setEventBookings(data);
+      })
+
+      .catch((err) => console.log(err));
   };
 
   return (
     <div>
 
-      {(role === "admin" ||
-        role === "organizer") && (
+      {(role === "admin" || role === "organizer") && (
 
         <div style={formBox}>
 
@@ -237,7 +279,6 @@ function EventsPage({ role, userId }) {
             >
               Add Event
             </button>
-
           )}
 
         </div>
@@ -296,6 +337,22 @@ function EventsPage({ role, userId }) {
               </div>
             )}
 
+            {role === "organizer" && (
+
+              <div>
+
+                <button
+                  style={primaryBtn}
+                  onClick={() =>
+                    loadEventBookings(event.id)
+                  }
+                >
+                  View Bookings
+                </button>
+
+              </div>
+            )}
+
             {role === "attendee" && (
 
               <div style={{ marginTop: "15px" }}>
@@ -303,14 +360,11 @@ function EventsPage({ role, userId }) {
                 <input
                   style={input}
                   placeholder="Enter Seat"
-                  value={
-                    seats[event.id] || ""
-                  }
+                  value={seats[event.id] || ""}
                   onChange={(e) =>
                     setSeats({
                       ...seats,
-                      [event.id]:
-                        e.target.value
+                      [event.id]: e.target.value
                     })
                   }
                 />
@@ -331,6 +385,41 @@ function EventsPage({ role, userId }) {
         ))}
 
       </div>
+
+      {/* ORGANIZER BOOKINGS */}
+
+      {role === "organizer" && (
+
+        <div style={{ marginTop: "40px" }}>
+
+          <h2 style={heading}>
+            📋 Event Bookings
+          </h2>
+
+          <div style={eventGrid}>
+
+            {eventBookings.map((b, i) => (
+
+              <div
+                key={i}
+                style={bookingCard}
+              >
+
+                <h3>{b.name}</h3>
+
+                <p>{b.email}</p>
+
+                <div style={seatBadge}>
+                  🎫 Seat : {b.seat_number}
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
@@ -398,27 +487,55 @@ function BookingsPage({ userId }) {
 
 function App() {
 
-  const storedUser =
-    JSON.parse(localStorage.getItem("user"));
+  // GET LOGGED USER
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  const role = storedUser?.role;
+  const role = user?.role;
+  const userId = user?.id;
 
-  const userId = storedUser?.id;
+  // IF NOT LOGGED IN
+  if (!user) {
+    return (
+      <BrowserRouter>
+        <Routes>
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+        </Routes>
+      </BrowserRouter>
+    );
+  }
 
   return (
-
     <BrowserRouter>
-
       <div style={mainContainer}>
-
         <div style={overlay}>
 
           <div style={topBar}>
-
             <h1 style={mainTitle}>
               🎟 Event Booking System
             </h1>
 
+            <button
+              style={deleteBtn}
+              onClick={() => {
+
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                window.location.href = "/login";
+              }}
+            >
+              Logout
+            </button>
           </div>
 
           <nav style={nav}>
@@ -427,26 +544,11 @@ function App() {
               Events
             </Link>
 
-            <Link
-              style={navLink}
-              to="/bookings"
-            >
-              My Bookings
-            </Link>
-
-            <Link
-              style={navLink}
-              to="/login"
-            >
-              Login
-            </Link>
-
-            <Link
-              style={navLink}
-              to="/register"
-            >
-              Register
-            </Link>
+            {role === "attendee" && (
+              <Link style={navLink} to="/bookings">
+                My Bookings
+              </Link>
+            )}
 
           </nav>
 
@@ -466,10 +568,12 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
+
                   <EventsPage
                     role={role}
                     userId={userId}
                   />
+
                 </ProtectedRoute>
               }
             />
@@ -478,9 +582,11 @@ function App() {
               path="/bookings"
               element={
                 <ProtectedRoute>
+
                   <BookingsPage
                     userId={userId}
                   />
+
                 </ProtectedRoute>
               }
             />
@@ -488,13 +594,10 @@ function App() {
           </Routes>
 
         </div>
-
       </div>
-
     </BrowserRouter>
   );
 }
-
 /* ================= CSS ================= */
 
 const mainContainer = {
