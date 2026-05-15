@@ -10,7 +10,8 @@ import Login from "./Login";
 import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
 
-const API = "https://event-booking-system-hjrv.onrender.com";
+const API =
+  "https://event-booking-system-hjrv.onrender.com";
 
 /* ================= EVENTS PAGE ================= */
 
@@ -28,6 +29,13 @@ function EventsPage({ user }) {
 
   const [editingEvent, setEditingEvent] =
     useState(null);
+
+  const [
+    organizerBookings,
+    setOrganizerBookings
+  ] = useState([]);
+
+  /* ================= LOAD EVENTS ================= */
 
   const loadEvents = () => {
 
@@ -50,7 +58,8 @@ function EventsPage({ user }) {
     fetch(`${API}/add-event`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type":
+          "application/json"
       },
       body: JSON.stringify({
         ...newEvent,
@@ -112,7 +121,8 @@ function EventsPage({ user }) {
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type":
+            "application/json"
         },
         body: JSON.stringify(newEvent)
       }
@@ -135,6 +145,23 @@ function EventsPage({ user }) {
       });
   };
 
+  /* ================= VIEW BOOKINGS ================= */
+
+  const viewBookings = (organizerId) => {
+
+    fetch(
+      `${API}/organizer-bookings/${organizerId}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+
+        setOrganizerBookings(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   /* ================= BOOK TICKET ================= */
 
   const bookTicket = (eventId) => {
@@ -142,14 +169,17 @@ function EventsPage({ user }) {
     const seat = seats[eventId];
 
     if (!seat) {
+
       alert("Enter seat number");
+
       return;
     }
 
     fetch(`${API}/book-ticket`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type":
+          "application/json"
       },
       body: JSON.stringify({
         user_id: user.id,
@@ -165,6 +195,7 @@ function EventsPage({ user }) {
   };
 
   return (
+
     <div>
 
       {(user.role === "admin" ||
@@ -221,7 +252,8 @@ function EventsPage({ user }) {
               onChange={(e) =>
                 setNewEvent({
                   ...newEvent,
-                  total_seats: e.target.value
+                  total_seats:
+                    e.target.value
                 })
               }
             />
@@ -278,8 +310,11 @@ function EventsPage({ user }) {
             </p>
 
             {(user.role === "admin" ||
+
               (user.role === "organizer" &&
-                event.organizer_id === user.id)) && (
+                event.organizer_id === user.id)
+
+            ) && (
 
               <div>
 
@@ -301,12 +336,29 @@ function EventsPage({ user }) {
                   Edit
                 </button>
 
+                {user.role ===
+                  "organizer" && (
+
+                  <button
+                    style={viewBtn}
+                    onClick={() =>
+                      viewBookings(user.id)
+                    }
+                  >
+                    View Bookings
+                  </button>
+                )}
+
               </div>
             )}
 
             {user.role === "attendee" && (
 
-              <div style={{ marginTop: "15px" }}>
+              <div
+                style={{
+                  marginTop: "15px"
+                }}
+              >
 
                 <input
                   style={input}
@@ -340,15 +392,56 @@ function EventsPage({ user }) {
 
       </div>
 
+      {user.role === "organizer" &&
+        organizerBookings.length > 0 && (
+
+        <div style={{ marginTop: "40px" }}>
+
+          <h2 style={heading}>
+            Booking Details
+          </h2>
+
+          <div style={eventGrid}>
+
+            {organizerBookings.map((b) => (
+
+              <div
+                key={b.id}
+                style={bookingCard}
+              >
+
+                <h3>{b.title}</h3>
+
+                <p>
+                  User : {b.name}
+                </p>
+
+                <p>
+                  Email : {b.email}
+                </p>
+
+                <div style={seatBadge}>
+                  Seat : {b.seat_number}
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }
 
-/* ================= BOOKINGS ================= */
+/* ================= BOOKINGS PAGE ================= */
 
 function BookingsPage({ user }) {
 
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] =
+    useState([]);
 
   const loadBookings = () => {
 
@@ -439,7 +532,8 @@ function App() {
                     borderRadius: "12px"
                   }}
                 >
-                  {user.name} ({user.role})
+                  {user.name} (
+                  {user.role})
                 </div>
 
                 <button
@@ -471,7 +565,14 @@ function App() {
               Events
             </Link>
 
-            {user?.role === "attendee" && (
+            {(user?.role ===
+              "attendee" ||
+
+              user?.role ===
+                "admin" ||
+
+              user?.role ===
+                "organizer") && (
 
               <Link
                 style={navLink}
@@ -499,7 +600,9 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <EventsPage user={user} />
+                  <EventsPage
+                    user={user}
+                  />
                 </ProtectedRoute>
               }
             />
@@ -508,7 +611,9 @@ function App() {
               path="/bookings"
               element={
                 <ProtectedRoute>
-                  <BookingsPage user={user} />
+                  <BookingsPage
+                    user={user}
+                  />
                 </ProtectedRoute>
               }
             />
@@ -530,16 +635,19 @@ const mainContainer = {
   background:
     "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)",
   padding: "30px",
-  fontFamily: "Poppins, sans-serif"
+  fontFamily:
+    "Poppins, sans-serif"
 };
 
 const overlay = {
-  background: "rgba(255,255,255,0.08)",
+  background:
+    "rgba(255,255,255,0.08)",
   backdropFilter: "blur(12px)",
   borderRadius: "25px",
   padding: "30px",
   color: "white",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
+  boxShadow:
+    "0 8px 32px rgba(0,0,0,0.3)"
 };
 
 const mainTitle = {
@@ -566,14 +674,16 @@ const nav = {
 const navLink = {
   textDecoration: "none",
   color: "white",
-  background: "rgba(255,255,255,0.15)",
+  background:
+    "rgba(255,255,255,0.15)",
   padding: "10px 18px",
   borderRadius: "12px",
   fontWeight: "600"
 };
 
 const formBox = {
-  background: "rgba(255,255,255,0.12)",
+  background:
+    "rgba(255,255,255,0.12)",
   padding: "25px",
   borderRadius: "20px",
   marginBottom: "30px",
@@ -631,6 +741,16 @@ const editBtn = {
   cursor: "pointer"
 };
 
+const viewBtn = {
+  background: "#3b82f6",
+  color: "white",
+  border: "none",
+  padding: "10px 16px",
+  borderRadius: "10px",
+  marginLeft: "10px",
+  cursor: "pointer"
+};
+
 const heading = {
   fontSize: "35px",
   marginBottom: "20px"
@@ -644,13 +764,15 @@ const eventGrid = {
 };
 
 const eventCard = {
-  background: "rgba(255,255,255,0.12)",
+  background:
+    "rgba(255,255,255,0.12)",
   borderRadius: "20px",
   padding: "22px"
 };
 
 const bookingCard = {
-  background: "rgba(255,255,255,0.12)",
+  background:
+    "rgba(255,255,255,0.12)",
   borderRadius: "20px",
   padding: "22px"
 };
