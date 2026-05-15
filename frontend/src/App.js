@@ -2,18 +2,20 @@ import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
- Route,
+  Route,
   Link
 } from "react-router-dom";
+
 import Login from "./Login";
 import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
-/* ================= BACKEND URL ================= */
-// const API = "https://event-booking-system-production-f3bb.up.railway.app";
-/* ================= EVENTS PAGE ================= */
 
 const API = "https://event-booking-system-hjrv.onrender.com";
+
+/* ================= EVENTS PAGE ================= */
+
 function EventsPage({ role, userId }) {
+
   const [events, setEvents] = useState([]);
   const [seats, setSeats] = useState({});
 
@@ -24,10 +26,11 @@ function EventsPage({ role, userId }) {
     total_seats: ""
   });
 
-  const [editingEvent, setEditingEvent] = useState(null);
+  const [editingEvent, setEditingEvent] =
+    useState(null);
 
-  // LOAD EVENTS
   const loadEvents = () => {
+
     fetch(`${API}/events`)
       .then((res) => res.json())
       .then((data) => setEvents(data))
@@ -43,6 +46,7 @@ function EventsPage({ role, userId }) {
 
   // ADD EVENT
   const addEvent = () => {
+
     fetch(`${API}/add-event`, {
       method: "POST",
       headers: {
@@ -52,6 +56,7 @@ function EventsPage({ role, userId }) {
     })
       .then((res) => res.text())
       .then((data) => {
+
         alert(data);
 
         setNewEvent({
@@ -62,25 +67,27 @@ function EventsPage({ role, userId }) {
         });
 
         loadEvents();
-      })
-      .catch((err) => console.log(err));
+      });
   };
 
   // DELETE EVENT
   const deleteEvent = (id) => {
+
     fetch(`${API}/delete-event/${id}`, {
       method: "DELETE"
     })
       .then((res) => res.text())
       .then((data) => {
+
         alert(data);
+
         loadEvents();
-      })
-      .catch((err) => console.log(err));
+      });
   };
 
   // EDIT EVENT
   const editEvent = (event) => {
+
     setEditingEvent(event);
 
     setNewEvent({
@@ -93,15 +100,20 @@ function EventsPage({ role, userId }) {
 
   // UPDATE EVENT
   const updateEvent = () => {
-    fetch(`${API}/update-event/${editingEvent.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(newEvent)
-    })
+
+    fetch(
+      `${API}/update-event/${editingEvent.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newEvent)
+      }
+    )
       .then((res) => res.text())
       .then((data) => {
+
         alert(data);
 
         setEditingEvent(null);
@@ -114,12 +126,12 @@ function EventsPage({ role, userId }) {
         });
 
         loadEvents();
-      })
-      .catch((err) => console.log(err));
+      });
   };
 
   // BOOK TICKET
   const bookTicket = (eventId) => {
+
     const seat = seats[eventId];
 
     if (!seat) {
@@ -139,17 +151,25 @@ function EventsPage({ role, userId }) {
       })
     })
       .then((res) => res.text())
-      .then((data) => alert(data))
-      .catch((err) => console.log(err));
+      .then((data) => {
+        alert(data);
+      });
   };
 
   return (
     <div>
-      {(role === "admin" || role === "organizer") && (
+
+      {(role === "admin" ||
+        role === "organizer") && (
+
         <div style={formBox}>
-          <h2 style={heading}>✨ Manage Events</h2>
+
+          <h2 style={heading}>
+            ✨ Manage Events
+          </h2>
 
           <div style={inputGrid}>
+
             <input
               style={input}
               placeholder="Event Title"
@@ -197,76 +217,121 @@ function EventsPage({ role, userId }) {
                 })
               }
             />
+
           </div>
 
           {editingEvent ? (
-            <button style={primaryBtn} onClick={updateEvent}>
+
+            <button
+              style={primaryBtn}
+              onClick={updateEvent}
+            >
               Update Event
             </button>
+
           ) : (
-            <button style={primaryBtn} onClick={addEvent}>
+
+            <button
+              style={primaryBtn}
+              onClick={addEvent}
+            >
               Add Event
             </button>
+
           )}
+
         </div>
       )}
 
-      <h2 style={heading}>🎉 Available Events</h2>
+      <h2 style={heading}>
+        🎉 Available Events
+      </h2>
 
       <div style={eventGrid}>
+
         {events.map((event) => (
-          <div key={event.id} style={eventCard}>
+
+          <div
+            key={event.id}
+            style={eventCard}
+          >
+
             <div style={cardTop}>
+
               <h3>{event.title}</h3>
 
-              <span style={badge}>{event.venue}</span>
+              <span style={badge}>
+                {event.venue}
+              </span>
+
             </div>
 
-            <p style={dateText}>📅 {event.date}</p>
+            <p style={dateText}>
+              📅 {event.date}
+            </p>
 
-            {(role === "admin" || role === "organizer") && (
+            {(role === "admin" ||
+              role === "organizer") && (
+
               <div>
+
                 <button
                   style={deleteBtn}
-                  onClick={() => deleteEvent(event.id)}
+                  onClick={() =>
+                    deleteEvent(event.id)
+                  }
                 >
                   Delete
                 </button>
 
                 <button
                   style={editBtn}
-                  onClick={() => editEvent(event)}
+                  onClick={() =>
+                    editEvent(event)
+                  }
                 >
                   Edit
                 </button>
+
               </div>
             )}
 
             {role === "attendee" && (
+
               <div style={{ marginTop: "15px" }}>
+
                 <input
                   style={input}
                   placeholder="Enter Seat"
-                  value={seats[event.id] || ""}
+                  value={
+                    seats[event.id] || ""
+                  }
                   onChange={(e) =>
                     setSeats({
                       ...seats,
-                      [event.id]: e.target.value
+                      [event.id]:
+                        e.target.value
                     })
                   }
                 />
 
                 <button
                   style={primaryBtn}
-                  onClick={() => bookTicket(event.id)}
+                  onClick={() =>
+                    bookTicket(event.id)
+                  }
                 >
                   Book Ticket
                 </button>
+
               </div>
             )}
+
           </div>
         ))}
+
       </div>
+
     </div>
   );
 }
@@ -274,28 +339,44 @@ function EventsPage({ role, userId }) {
 /* ================= BOOKINGS PAGE ================= */
 
 function BookingsPage({ userId }) {
-  const [bookings, setBookings] = useState([]);
+
+  const [bookings, setBookings] =
+    useState([]);
 
   const loadBookings = () => {
+
     fetch(`${API}/my-bookings/${userId}`)
       .then((res) => res.json())
-      .then((data) => setBookings(data))
-      .catch((err) => console.log(err));
+      .then((data) => setBookings(data));
   };
 
   return (
     <div>
-      <div style={bookingHeader}>
-        <h2 style={heading}>🧾 My Bookings</h2>
 
-        <button style={primaryBtn} onClick={loadBookings}>
+      <div style={bookingHeader}>
+
+        <h2 style={heading}>
+          🧾 My Bookings
+        </h2>
+
+        <button
+          style={primaryBtn}
+          onClick={loadBookings}
+        >
           Load Bookings
         </button>
+
       </div>
 
       <div style={eventGrid}>
+
         {bookings.map((b, i) => (
-          <div key={i} style={bookingCard}>
+
+          <div
+            key={i}
+            style={bookingCard}
+          >
+
             <h3>{b.title}</h3>
 
             <p>📍 {b.venue}</p>
@@ -303,9 +384,12 @@ function BookingsPage({ userId }) {
             <div style={seatBadge}>
               🎫 Seat : {b.seat_number}
             </div>
+
           </div>
         ))}
+
       </div>
+
     </div>
   );
 }
@@ -313,77 +397,100 @@ function BookingsPage({ userId }) {
 /* ================= MAIN APP ================= */
 
 function App() {
-  const [role, setRole] = useState("admin");
-  const [userId, setUserId] = useState(1);
+
+  const storedUser =
+    JSON.parse(localStorage.getItem("user"));
+
+  const role = storedUser?.role;
+
+  const userId = storedUser?.id;
 
   return (
+
     <BrowserRouter>
+
       <div style={mainContainer}>
+
         <div style={overlay}>
+
           <div style={topBar}>
+
             <h1 style={mainTitle}>
               🎟 Event Booking System
             </h1>
 
-            <select
-              style={select}
-              value={role}
-              onChange={(e) => {
-                const selected = e.target.value;
-
-                setRole(selected);
-
-                if (selected === "admin") setUserId(1);
-                else if (selected === "organizer") setUserId(2);
-                else setUserId(3);
-              }}
-            >
-              <option value="admin">Admin</option>
-              <option value="organizer">Organizer</option>
-              <option value="attendee">Attendee</option>
-            </select>
           </div>
 
           <nav style={nav}>
+
             <Link style={navLink} to="/">
               Events
             </Link>
 
-            <Link style={navLink} to="/bookings">
+            <Link
+              style={navLink}
+              to="/bookings"
+            >
               My Bookings
             </Link>
+
+            <Link
+              style={navLink}
+              to="/login"
+            >
+              Login
+            </Link>
+
+            <Link
+              style={navLink}
+              to="/register"
+            >
+              Register
+            </Link>
+
           </nav>
 
           <Routes>
 
-  <Route path="/login" element={<Login />} />
+            <Route
+              path="/login"
+              element={<Login />}
+            />
 
-  <Route path="/register" element={<Register />} />
+            <Route
+              path="/register"
+              element={<Register />}
+            />
 
-  <Route
-    path="/"
-    element={
-      <ProtectedRoute>
-        <EventsPage
-          role={role}
-          userId={userId}
-        />
-      </ProtectedRoute>
-    }
-  />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <EventsPage
+                    role={role}
+                    userId={userId}
+                  />
+                </ProtectedRoute>
+              }
+            />
 
-  <Route
-    path="/bookings"
-    element={
-      <ProtectedRoute>
-        <BookingsPage userId={userId} />
-      </ProtectedRoute>
-    }
-  />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <BookingsPage
+                    userId={userId}
+                  />
+                </ProtectedRoute>
+              }
+            />
 
-</Routes>
+          </Routes>
+
         </div>
+
       </div>
+
     </BrowserRouter>
   );
 }
@@ -403,27 +510,24 @@ const overlay = {
   backdropFilter: "blur(12px)",
   borderRadius: "25px",
   padding: "30px",
-  color: "white",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
-};
-
-const mainTitle = {
-  fontSize: "40px",
-  fontWeight: "bold"
+  color: "white"
 };
 
 const topBar = {
   display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  flexWrap: "wrap"
+  justifyContent: "space-between"
+};
+
+const mainTitle = {
+  fontSize: "40px"
 };
 
 const nav = {
   marginTop: "20px",
   marginBottom: "20px",
   display: "flex",
-  gap: "15px"
+  gap: "15px",
+  flexWrap: "wrap"
 };
 
 const navLink = {
@@ -431,8 +535,7 @@ const navLink = {
   color: "white",
   background: "rgba(255,255,255,0.15)",
   padding: "10px 18px",
-  borderRadius: "12px",
-  fontWeight: "600"
+  borderRadius: "12px"
 };
 
 const formBox = {
@@ -454,16 +557,8 @@ const input = {
   padding: "14px",
   borderRadius: "12px",
   border: "none",
-  outline: "none",
   fontSize: "18px",
   width: "90%"
-};
-
-const select = {
-  padding: "12px",
-  borderRadius: "12px",
-  border: "none",
-  fontSize: "18px"
 };
 
 const primaryBtn = {
@@ -473,9 +568,7 @@ const primaryBtn = {
   border: "none",
   padding: "12px 22px",
   borderRadius: "12px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "10px"
+  cursor: "pointer"
 };
 
 const deleteBtn = {
@@ -484,8 +577,7 @@ const deleteBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  marginRight: "10px",
-  cursor: "pointer"
+  marginRight: "10px"
 };
 
 const editBtn = {
@@ -493,8 +585,7 @@ const editBtn = {
   color: "white",
   border: "none",
   padding: "10px 16px",
-  borderRadius: "10px",
-  cursor: "pointer"
+  borderRadius: "10px"
 };
 
 const heading = {
@@ -523,13 +614,11 @@ const bookingCard = {
 
 const cardTop = {
   display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center"
+  justifyContent: "space-between"
 };
 
 const badge = {
   background: "#f59e0b",
-  color: "white",
   padding: "6px 12px",
   borderRadius: "30px"
 };
@@ -549,9 +638,7 @@ const dateText = {
 const bookingHeader = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "20px",
-  flexWrap: "wrap"
+  marginBottom: "20px"
 };
 
 export default App;
