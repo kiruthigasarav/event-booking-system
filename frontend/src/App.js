@@ -443,7 +443,7 @@ function BookingsPage({ user }) {
   const [bookings, setBookings] =
     useState([]);
 
-  const loadBookings = () => {
+  useEffect(() => {
 
     fetch(
       `${API}/my-bookings/${user.id}`
@@ -455,11 +455,8 @@ function BookingsPage({ user }) {
       .catch((err) => {
         console.log(err);
       });
-  };
 
-  useEffect(() => {
-    loadBookings();
-  }, []);
+  }, [user.id]);
 
   return (
 
@@ -494,7 +491,6 @@ function BookingsPage({ user }) {
     </div>
   );
 }
-
 /* ================= APP ================= */
 
 function App() {
