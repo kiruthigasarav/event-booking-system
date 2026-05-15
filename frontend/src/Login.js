@@ -1,3 +1,11 @@
+import {
+  signInWithPopup
+} from "firebase/auth";
+
+import {
+  auth,
+  provider
+} from "./firebase";
 import React, { useState } from "react";
 import {
     useNavigate,
@@ -8,7 +16,41 @@ const API =
     "https://event-booking-system-hjrv.onrender.com";
 
 function Login() {
+    const googleLogin = async () => {
 
+  try {
+
+    const result =
+      await signInWithPopup(
+        auth,
+        provider
+      );
+
+    const user = result.user;
+
+    const googleUser = {
+      id: Date.now(),
+      name: user.displayName,
+      email: user.email,
+      role: "attendee"
+    };
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(googleUser)
+    );
+
+    alert("Google Login Success");
+
+    window.location.href = "/";
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert("Google Login Failed");
+  }
+};
     const [form, setForm] = useState({
         email: "",
         password: ""
@@ -108,7 +150,12 @@ function Login() {
                 >
                     Login
                 </button>
-
+                    <button
+  style={button}
+  onClick={googleLogin}
+>
+  Sign in with Google
+</button>
                 <p style={text}>
 
                     Don't have an account?
@@ -177,9 +224,9 @@ const button = {
     color: "white",
     fontSize: "18px",
     fontWeight: "bold",
-    cursor: "pointer"
+    cursor: "pointer",
+    marginTop: "10px"
 };
-
 const text = {
     color: "white",
     marginTop: "20px",
