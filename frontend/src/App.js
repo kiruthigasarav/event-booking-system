@@ -48,13 +48,42 @@ const loadEvents = useCallback(() => {
   fetch(`${API}/events`)
     .then((res) => res.json())
     .then((data) => {
-      setEvents(data);
+
+      /* ADMIN CAN SEE ALL EVENTS */
+
+      if (user.role === "admin") {
+
+        setEvents(data);
+      }
+
+      /* ORGANIZER CAN SEE ONLY OWN EVENTS */
+
+      else if (
+        user.role === "organizer"
+      ) {
+
+        const filteredEvents =
+          data.filter(
+            (event) =>
+              event.organizer_id ===
+              user.id
+          );
+
+        setEvents(filteredEvents);
+      }
+
+      /* ATTENDEE CAN SEE ALL EVENTS */
+
+      else {
+
+        setEvents(data);
+      }
     })
     .catch((err) => {
       console.log(err);
     });
 
-}, []);
+}, [user]);
 
 useEffect(() => {
 
