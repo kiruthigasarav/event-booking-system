@@ -1,10 +1,3 @@
-import React, { useState } from "react";
-
-import {
-  useNavigate,
-  Link
-} from "react-router-dom";
-
 import {
   signInWithPopup
 } from "firebase/auth";
@@ -13,282 +6,238 @@ import {
   auth,
   provider
 } from "./firebase";
+import React, { useState } from "react";
+import {
+    useNavigate,
+    Link
+} from "react-router-dom";
 
 const API =
-  "https://event-booking-system-hjrv.onrender.com";
+    "https://event-booking-system-hjrv.onrender.com";
 
 function Login() {
+    const googleLogin = async () => {
 
-  const navigate = useNavigate();
+  try {
 
-  const [form, setForm] = useState({
-    email: "",
-    password: ""
-  });
-
-  /* ================= NORMAL LOGIN ================= */
-
-  const login = async () => {
-
-    try {
-
-      const response = await fetch(
-        `${API}/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-          body: JSON.stringify(form)
-        }
+    const result =
+      await signInWithPopup(
+        auth,
+        provider
       );
 
-      const data =
-        await response.json();
+    const user = result.user;
 
-      if (data.success) {
+    const googleUser = {
+      id: Date.now(),
+      name: user.displayName,
+      email: user.email,
+      role: "attendee"
+    };
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
+    localStorage.setItem(
+      "user",
+      JSON.stringify(googleUser)
+    );
 
-        localStorage.setItem(
-          "token",
-          data.token
-        );
+    alert("Google Login Success");
 
-        alert("Login Successful");
+    window.location.href = "/";
 
-        window.location.href = "/";
+  } catch (error) {
 
-      } else {
+    console.log(error);
 
-        alert(data.message);
-      }
+    alert("Google Login Failed");
+  }
+};
+    const [form, setForm] = useState({
+        email: "",
+        password: ""
+    });
 
-    } catch (error) {
+    const navigate = useNavigate();
 
-      console.log(error);
+    const login = async () => {
 
-      alert("Server Error");
-    }
-  };
+        try {
 
-  /* ================= GOOGLE LOGIN ================= */
+            const response = await fetch(
+                `${API}/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify(form)
+                }
+            );
 
-  const googleLogin = async () => {
+            const data =
+                await response.json();
 
-    try {
+            if (data.success) {
 
-      const result =
-        await signInWithPopup(
-          auth,
-          provider
-        );
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(data.user)
+                );
 
-      const googleUser =
-        result.user;
+                localStorage.setItem(
+                    "token",
+                    data.token
+                );
 
-      /* SAVE GOOGLE USER IN DATABASE */
+                alert(
+                    "Login Successful"
+                );
 
-      const response = await fetch(
-        `${API}/google-login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-          body: JSON.stringify({
-            name:
-              googleUser.displayName,
-            email:
-              googleUser.email
-          })
+                navigate("/");
+
+            } else {
+
+                alert(data.message);
+            }
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert("Server Error");
         }
-      );
+    };
 
-      const data =
-        await response.json();
+    return (
 
-      if (data.success) {
+        <div style={container}>
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
+            <div style={box}>
 
-        localStorage.setItem(
-          "token",
-          data.token
-        );
+                <h2 style={title}>
+                    Login
+                </h2>
 
-        alert(
-          "Google Login Successful"
-        );
+                <input
+                    style={input}
+                    type="email"
+                    placeholder="Email"
+                    onChange={(e) =>
+                        setForm({
+                            ...form,
+                            email:
+                                e.target.value
+                        })
+                    }
+                />
 
-        window.location.href = "/";
+                <input
+                    style={input}
+                    type="password"
+                    placeholder="Password"
+                    onChange={(e) =>
+                        setForm({
+                            ...form,
+                            password:
+                                e.target.value
+                        })
+                    }
+                />
 
-      } else {
+                <button
+                    style={button}
+                    onClick={login}
+                >
+                    Login
+                </button>
+                    <button
+  style={button}
+  onClick={googleLogin}
+>
+  Sign in with Google
+</button>
+                <p style={text}>
 
-        alert(data.message);
-      }
+                    Don't have an account?
 
-    } catch (error) {
+                    <Link
+                        to="/register"
+                        style={link}
+                    >
+                        Register
+                    </Link>
 
-      console.log(error);
+                </p>
 
-      alert("Google Login Failed");
-    }
-  };
+            </div>
 
-  return (
-
-    <div style={container}>
-
-      <div style={box}>
-
-        <h2 style={title}>
-          Login
-        </h2>
-
-        <input
-          style={input}
-          type="email"
-          placeholder="Email"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              email: e.target.value
-            })
-          }
-        />
-
-        <input
-          style={input}
-          type="password"
-          placeholder="Password"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              password: e.target.value
-            })
-          }
-        />
-
-        <button
-          style={button}
-          onClick={login}
-        >
-          Login
-        </button>
-
-        <button
-          style={googleBtn}
-          onClick={googleLogin}
-        >
-          Sign in with Google
-        </button>
-
-        <p style={text}>
-
-          Don't have an account?
-
-          <Link
-            to="/register"
-            style={link}
-          >
-            Register
-          </Link>
-
-        </p>
-
-      </div>
-
-    </div>
-  );
+        </div>
+    );
 }
 
 /* ================= CSS ================= */
 
 const container = {
-  minHeight: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background:
-    "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)"
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background:
+        "linear-gradient(135deg, #0f172a, #1e3a8a, #312e81)"
 };
 
 const box = {
-  background:
-    "rgba(255,255,255,0.08)",
-  padding: "40px",
-  borderRadius: "20px",
-  width: "350px",
-  backdropFilter: "blur(10px)",
-  boxShadow:
-    "0 8px 32px rgba(0,0,0,0.3)"
+    background:
+        "rgba(255,255,255,0.08)",
+    padding: "40px",
+    borderRadius: "20px",
+    width: "350px",
+    backdropFilter: "blur(10px)",
+    boxShadow:
+        "0 8px 32px rgba(0,0,0,0.3)"
 };
 
 const title = {
-  color: "white",
-  textAlign: "center",
-  marginBottom: "25px",
-  fontSize: "35px"
+    color: "white",
+    textAlign: "center",
+    marginBottom: "25px",
+    fontSize: "35px"
 };
 
 const input = {
-  width: "100%",
-  padding: "14px",
-  marginBottom: "20px",
-  borderRadius: "12px",
-  border: "none",
-  outline: "none",
-  fontSize: "16px",
-  boxSizing: "border-box"
+    width: "100%",
+    padding: "14px",
+    marginBottom: "20px",
+    borderRadius: "12px",
+    border: "none",
+    outline: "none",
+    fontSize: "16px"
 };
 
 const button = {
-  width: "100%",
-  padding: "14px",
-  border: "none",
-  borderRadius: "12px",
-  background:
-    "linear-gradient(135deg,#06b6d4,#3b82f6)",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "10px"
+    width: "100%",
+    padding: "14px",
+    border: "none",
+    borderRadius: "12px",
+    background:
+        "linear-gradient(135deg,#06b6d4,#3b82f6)",
+    color: "white",
+    fontSize: "18px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginTop: "10px"
 };
-
-const googleBtn = {
-  width: "100%",
-  padding: "14px",
-  border: "none",
-  borderRadius: "12px",
-  background: "#db4437",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "15px"
-};
-
 const text = {
-  color: "white",
-  marginTop: "20px",
-  textAlign: "center"
+    color: "white",
+    marginTop: "20px",
+    textAlign: "center"
 };
 
 const link = {
-  color: "#38bdf8",
-  marginLeft: "8px",
-  textDecoration: "none",
-  fontWeight: "bold"
+    color: "#38bdf8",
+    marginLeft: "8px",
+    textDecoration: "none",
+    fontWeight: "bold"
 };
 
 export default Login;
