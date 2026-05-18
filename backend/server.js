@@ -203,8 +203,6 @@ app.post("/google-login", (req, res) => {
                 });
             }
 
-            /* USER EXISTS */
-
             if (result.length > 0) {
 
                 const user = result[0];
@@ -226,8 +224,6 @@ app.post("/google-login", (req, res) => {
                     user
                 });
             }
-
-            /* CREATE NEW USER */
 
             const sql =
                 `INSERT INTO users

@@ -28,21 +28,44 @@ function Login() {
 
     const user = result.user;
 
-    const googleUser = {
-      id: Date.now(),
-      name: user.displayName,
-      email: user.email,
-      role: "attendee"
-    };
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify(googleUser)
+    const response = await fetch(
+      `${API}/google-login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          name: user.displayName,
+          email: user.email
+        })
+      }
     );
 
-    alert("Google Login Success");
+    const data =
+      await response.json();
 
-    window.location.href = "/";
+    if (data.success) {
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
+      alert("Google Login Success");
+
+      window.location.href = "/";
+
+    } else {
+
+      alert("Google Login Failed");
+    }
 
   } catch (error) {
 
