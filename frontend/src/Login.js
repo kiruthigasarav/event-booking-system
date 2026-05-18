@@ -59,11 +59,9 @@ function Login() {
           data.token
         );
 
-        alert(
-          "Login Successful"
-        );
+        alert("Login Successful");
 
-        navigate("/");
+        window.location.href = "/";
 
       } else {
 
@@ -93,28 +91,27 @@ function Login() {
       const googleUser =
         result.user;
 
-      /* CHECK USER EXISTS */
+      /* SAVE GOOGLE USER IN DATABASE */
 
-      const checkResponse =
-        await fetch(
-          `${API}/google-login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-            body: JSON.stringify({
-              name:
-                googleUser.displayName,
-              email:
-                googleUser.email
-            })
-          }
-        );
+      const response = await fetch(
+        `${API}/google-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            name:
+              googleUser.displayName,
+            email:
+              googleUser.email
+          })
+        }
+      );
 
       const data =
-        await checkResponse.json();
+        await response.json();
 
       if (data.success) {
 
@@ -132,7 +129,7 @@ function Login() {
           "Google Login Successful"
         );
 
-        navigate("/");
+        window.location.href = "/";
 
       } else {
 
@@ -161,12 +158,10 @@ function Login() {
           style={input}
           type="email"
           placeholder="Email"
-          value={form.email}
           onChange={(e) =>
             setForm({
               ...form,
-              email:
-                e.target.value
+              email: e.target.value
             })
           }
         />
@@ -175,12 +170,10 @@ function Login() {
           style={input}
           type="password"
           placeholder="Password"
-          value={form.password}
           onChange={(e) =>
             setForm({
               ...form,
-              password:
-                e.target.value
+              password: e.target.value
             })
           }
         />

@@ -7,7 +7,7 @@ import React, {
 import {
   BrowserRouter,
   Routes,
- Route,
+  Route,
   Link,
   Navigate,
   useNavigate
@@ -70,11 +70,6 @@ function EventsPage({ user }) {
 
   const addEvent = () => {
 
-    if (!user?.id) {
-      alert("User ID missing");
-      return;
-    }
-
     fetch(`${API}/add-event`, {
       method: "POST",
       headers: {
@@ -99,9 +94,6 @@ function EventsPage({ user }) {
           venue: "",
           total_seats: ""
         });
-      })
-      .catch((err) => {
-        console.log(err);
       });
   };
 
@@ -139,8 +131,6 @@ function EventsPage({ user }) {
 
   const updateEvent = () => {
 
-    if (!editingEvent) return;
-
     fetch(
       `${API}/update-event/${editingEvent.id}`,
       {
@@ -174,11 +164,6 @@ function EventsPage({ user }) {
 
   const viewBookings = () => {
 
-    if (!user?.id) {
-      alert("Organizer ID missing");
-      return;
-    }
-
     fetch(
       `${API}/organizer-bookings/${user.id}`
     )
@@ -190,9 +175,6 @@ function EventsPage({ user }) {
         } else {
           setOrganizerBookings([]);
         }
-      })
-      .catch((err) => {
-        console.log(err);
       });
   };
 
@@ -203,18 +185,7 @@ function EventsPage({ user }) {
     const seat = seats[eventId];
 
     if (!seat) {
-
       alert("Enter seat number");
-
-      return;
-    }
-
-    if (!user?.id) {
-
-      alert(
-        "Login issue. Please login again."
-      );
-
       return;
     }
 
@@ -234,9 +205,6 @@ function EventsPage({ user }) {
       .then((data) => {
 
         alert(data.message);
-      })
-      .catch((err) => {
-        console.log(err);
       });
   };
 
@@ -437,49 +405,6 @@ function EventsPage({ user }) {
 
       </div>
 
-      {user?.role === "organizer" && (
-
-        <div style={{ marginTop: "40px" }}>
-
-          <h2 style={heading}>
-            Booking Details
-          </h2>
-
-          <div style={eventGrid}>
-
-            {organizerBookings.length === 0 ? (
-              <p>No bookings yet</p>
-            ) : (
-              organizerBookings.map((b) => (
-
-                <div
-                  key={b.id}
-                  style={bookingCard}
-                >
-
-                  <h3>{b.title}</h3>
-
-                  <p>
-                    User : {b.name}
-                  </p>
-
-                  <p>
-                    Email : {b.email}
-                  </p>
-
-                  <div style={seatBadge}>
-                    Seat : {b.seat_number}
-                  </div>
-
-                </div>
-              ))
-            )}
-
-          </div>
-
-        </div>
-      )}
-
     </div>
   );
 }
@@ -506,9 +431,6 @@ function BookingsPage({ user }) {
         } else {
           setBookings([]);
         }
-      })
-      .catch((err) => {
-        console.log(err);
       });
 
   }, [user]);
@@ -523,27 +445,23 @@ function BookingsPage({ user }) {
 
       <div style={eventGrid}>
 
-        {bookings.length === 0 ? (
-          <p>No bookings found</p>
-        ) : (
-          bookings.map((b, i) => (
+        {bookings.map((b, i) => (
 
-            <div
-              key={i}
-              style={bookingCard}
-            >
+          <div
+            key={i}
+            style={bookingCard}
+          >
 
-              <h3>{b.title}</h3>
+            <h3>{b.title}</h3>
 
-              <p>{b.venue}</p>
+            <p>{b.venue}</p>
 
-              <div style={seatBadge}>
-                Seat : {b.seat_number}
-              </div>
-
+            <div style={seatBadge}>
+              Seat : {b.seat_number}
             </div>
-          ))
-        )}
+
+          </div>
+        ))}
 
       </div>
 
@@ -566,14 +484,6 @@ function AppContent() {
       ? JSON.parse(storedUser)
       : null;
   });
-
-  useEffect(() => {
-
-    if (user) {
-      navigate("/");
-    }
-
-  }, [user, navigate]);
 
   const logout = () => {
 
@@ -698,8 +608,6 @@ function AppContent() {
   );
 }
 
-/* ================= APP ================= */
-
 function App() {
 
   return (
@@ -728,23 +636,18 @@ const overlay = {
   backdropFilter: "blur(12px)",
   borderRadius: "25px",
   padding: "30px",
-  color: "white",
-  boxShadow:
-    "0 8px 32px rgba(0,0,0,0.3)"
+  color: "white"
 };
 
 const mainTitle = {
   fontSize: "55px",
-  fontWeight: "bold",
-  margin: 0
+  fontWeight: "bold"
 };
 
 const topBar = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
-  flexWrap: "wrap",
-  gap: "20px"
+  alignItems: "center"
 };
 
 const nav = {
@@ -756,41 +659,26 @@ const nav = {
 
 const navLink = {
   textDecoration: "none",
-  color: "white",
-  background:
-    "rgba(255,255,255,0.15)",
-  padding: "10px 18px",
-  borderRadius: "12px",
-  fontWeight: "600"
+  color: "white"
 };
 
 const formBox = {
-  background:
-    "rgba(255,255,255,0.12)",
-  padding: "25px",
-  borderRadius: "20px",
-  marginBottom: "30px",
-  width: "100%",
-  boxSizing: "border-box"
+  marginBottom: "30px"
 };
 
 const inputGrid = {
   display: "grid",
   gridTemplateColumns:
-    "repeat(auto-fit, minmax(250px,1fr))",
-  gap: "20px",
-  marginBottom: "20px",
-  width: "100%"
+    "repeat(auto-fit,minmax(250px,1fr))",
+  gap: "20px"
 };
 
 const input = {
   padding: "14px",
   borderRadius: "12px",
   border: "none",
-  outline: "none",
   fontSize: "18px",
-  width: "100%",
-  boxSizing: "border-box"
+  width: "100%"
 };
 
 const primaryBtn = {
@@ -800,7 +688,6 @@ const primaryBtn = {
   border: "none",
   padding: "12px 22px",
   borderRadius: "12px",
-  fontWeight: "bold",
   cursor: "pointer",
   marginTop: "10px"
 };
@@ -811,8 +698,7 @@ const deleteBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  marginRight: "10px",
-  cursor: "pointer"
+  marginRight: "10px"
 };
 
 const editBtn = {
@@ -821,7 +707,6 @@ const editBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  cursor: "pointer",
   marginRight: "10px"
 };
 
@@ -830,20 +715,17 @@ const viewBtn = {
   color: "white",
   border: "none",
   padding: "10px 16px",
-  borderRadius: "10px",
-  marginLeft: "10px",
-  cursor: "pointer"
+  borderRadius: "10px"
 };
 
 const heading = {
-  fontSize: "35px",
-  marginBottom: "20px"
+  fontSize: "35px"
 };
 
 const eventGrid = {
   display: "grid",
   gridTemplateColumns:
-    "repeat(auto-fit, minmax(300px,1fr))",
+    "repeat(auto-fit,minmax(300px,1fr))",
   gap: "20px"
 };
 
@@ -863,13 +745,11 @@ const bookingCard = {
 
 const cardTop = {
   display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center"
+  justifyContent: "space-between"
 };
 
 const badge = {
   background: "#f59e0b",
-  color: "white",
   padding: "6px 12px",
   borderRadius: "30px"
 };
