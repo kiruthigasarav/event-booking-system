@@ -8,9 +8,7 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Link,
-  Navigate,
-  useNavigate
+  Link
 } from "react-router-dom";
 
 import Login from "./Login";
@@ -48,14 +46,7 @@ function EventsPage({ user }) {
 
     fetch(`${API}/events`)
       .then((res) => res.json())
-      .then((data) => {
-
-        if (Array.isArray(data)) {
-          setEvents(data);
-        } else {
-          setEvents([]);
-        }
-      })
+      .then((data) => setEvents(data))
       .catch((err) => {
         console.log(err);
       });
@@ -121,7 +112,7 @@ function EventsPage({ user }) {
 
     setNewEvent({
       title: event.title,
-      date: event.date?.split("T")[0] || "",
+      date: event.date,
       venue: event.venue,
       total_seats: event.total_seats
     });
@@ -162,19 +153,18 @@ function EventsPage({ user }) {
 
   /* ================= VIEW BOOKINGS ================= */
 
-  const viewBookings = () => {
+  const viewBookings = (organizerId) => {
 
     fetch(
-      `${API}/organizer-bookings/${user.id}`
+      `${API}/organizer-bookings/${organizerId}`
     )
       .then((res) => res.json())
       .then((data) => {
 
-        if (Array.isArray(data)) {
-          setOrganizerBookings(data);
-        } else {
-          setOrganizerBookings([]);
-        }
+        setOrganizerBookings(data);
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -185,7 +175,9 @@ function EventsPage({ user }) {
     const seat = seats[eventId];
 
     if (!seat) {
+
       alert("Enter seat number");
+
       return;
     }
 
@@ -212,8 +204,8 @@ function EventsPage({ user }) {
 
     <div>
 
-      {(user?.role === "admin" ||
-        user?.role === "organizer") && (
+      {(user.role === "admin" ||
+        user.role === "organizer") && (
 
         <div style={formBox}>
 
@@ -320,14 +312,13 @@ function EventsPage({ user }) {
             </div>
 
             <p style={dateText}>
-              {new Date(event.date)
-                .toLocaleDateString()}
+              {event.date}
             </p>
 
-            {(user?.role === "admin" ||
+            {(user.role === "admin" ||
 
-              (user?.role === "organizer" &&
-                Number(event.organizer_id) === Number(user.id))
+              (user.role === "organizer" &&
+                event.organizer_id === user.id)
 
             ) && (
 
@@ -351,12 +342,14 @@ function EventsPage({ user }) {
                   Edit
                 </button>
 
-                {user?.role ===
+                {user.role ===
                   "organizer" && (
 
                   <button
                     style={viewBtn}
-                    onClick={viewBookings}
+                    onClick={() =>
+                      viewBookings(user.id)
+                    }
                   >
                     View Bookings
                   </button>
@@ -365,7 +358,7 @@ function EventsPage({ user }) {
               </div>
             )}
 
-            {user?.role === "attendee" && (
+            {user.role === "attendee" && (
 
               <div
                 style={{
@@ -405,6 +398,46 @@ function EventsPage({ user }) {
 
       </div>
 
+      {user.role === "organizer" &&
+        organizerBookings.length > 0 && (
+
+        <div style={{ marginTop: "40px" }}>
+
+          <h2 style={heading}>
+            Booking Details
+          </h2>
+
+          <div style={eventGrid}>
+
+            {organizerBookings.map((b) => (
+
+              <div
+                key={b.id}
+                style={bookingCard}
+              >
+
+                <h3>{b.title}</h3>
+
+                <p>
+                  User : {b.name}
+                </p>
+
+                <p>
+                  Email : {b.email}
+                </p>
+
+                <div style={seatBadge}>
+                  Seat : {b.seat_number}
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }
@@ -418,22 +451,18 @@ function BookingsPage({ user }) {
 
   useEffect(() => {
 
-    if (!user?.id) return;
-
     fetch(
       `${API}/my-bookings/${user.id}`
     )
       .then((res) => res.json())
-      .then((data) => {
-
-        if (Array.isArray(data)) {
-          setBookings(data);
-        } else {
-          setBookings([]);
-        }
+      .then((data) =>
+        setBookings(data)
+      )
+      .catch((err) => {
+        console.log(err);
       });
 
-  }, [user]);
+  }, [user.id]);
 
   return (
 
@@ -469,79 +498,74 @@ function BookingsPage({ user }) {
   );
 }
 
-/* ================= APP CONTENT ================= */
+/* ================= APP ================= */
 
-function AppContent() {
+function App() {
 
-  const navigate = useNavigate();
-
-  const [user, setUser] = useState(() => {
-
-    const storedUser =
-      localStorage.getItem("user");
-
-    return storedUser
-      ? JSON.parse(storedUser)
-      : null;
-  });
-
-  const logout = () => {
-
-    localStorage.removeItem("user");
-
-    localStorage.removeItem("token");
-
-    setUser(null);
-
-    navigate("/login");
-  };
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   return (
 
-    <div style={mainContainer}>
+    <BrowserRouter>
 
-      <div style={overlay}>
+      <div style={mainContainer}>
 
-        {user && (
+        <div style={overlay}>
 
-          <div style={topBar}>
+          {user && (
 
-            <h1 style={mainTitle}>
-              Event Booking System
-            </h1>
+            <div style={topBar}>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "15px",
-                alignItems: "center"
-              }}
-            >
+              <h1 style={mainTitle}>
+                Event Booking System
+              </h1>
 
               <div
                 style={{
-                  background:
-                    "rgba(255,255,255,0.15)",
-                  padding: "10px 18px",
-                  borderRadius: "12px"
+                  display: "flex",
+                  gap: "15px",
+                  alignItems: "center"
                 }}
               >
-                {user.name} ({user.role})
+
+                <div
+                  style={{
+                    background:
+                      "rgba(255,255,255,0.15)",
+                    padding: "10px 18px",
+                    borderRadius: "12px"
+                  }}
+                >
+                  {user.name} (
+                  {user.role})
+                </div>
+
+                <button
+                  style={deleteBtn}
+                  onClick={() => {
+
+                    localStorage.removeItem(
+                      "user"
+                    );
+
+                    localStorage.removeItem(
+                      "token"
+                    );
+
+                    window.location.href =
+                      "/login";
+                  }}
+                >
+                  Logout
+                </button>
+
               </div>
 
-              <button
-                style={deleteBtn}
-                onClick={logout}
-              >
-                Logout
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
-
-        {user && (
           <nav style={nav}>
 
             <Link
@@ -551,71 +575,66 @@ function AppContent() {
               Events
             </Link>
 
-            <Link
-              style={navLink}
-              to="/bookings"
-            >
-              My Bookings
-            </Link>
+            {(user?.role ===
+              "attendee" ||
+
+              user?.role ===
+                "admin" ||
+
+              user?.role ===
+                "organizer") && (
+
+              <Link
+                style={navLink}
+                to="/bookings"
+              >
+                My Bookings
+              </Link>
+            )}
 
           </nav>
-        )}
 
-        <Routes>
+          <Routes>
 
-          <Route
-            path="/login"
-            element={<Login />}
-          />
+            <Route
+              path="/login"
+              element={<Login />}
+            />
 
-          <Route
-            path="/register"
-            element={<Register />}
-          />
+            <Route
+              path="/register"
+              element={<Register />}
+            />
 
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <EventsPage
-                  user={user}
-                />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <EventsPage
+                    user={user}
+                  />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/bookings"
-            element={
-              <ProtectedRoute>
-                <BookingsPage
-                  user={user}
-                />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <BookingsPage
+                    user={user}
+                  />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="*"
-            element={<Navigate to="/" />}
-          />
+          </Routes>
 
-        </Routes>
+        </div>
 
       </div>
 
-    </div>
-  );
-}
-
-function App() {
-
-  return (
-
-    <BrowserRouter>
-      <AppContent />
     </BrowserRouter>
-
   );
 }
 
@@ -636,18 +655,23 @@ const overlay = {
   backdropFilter: "blur(12px)",
   borderRadius: "25px",
   padding: "30px",
-  color: "white"
+  color: "white",
+  boxShadow:
+    "0 8px 32px rgba(0,0,0,0.3)"
 };
 
 const mainTitle = {
   fontSize: "55px",
-  fontWeight: "bold"
+  fontWeight: "bold",
+  margin: 0
 };
 
 const topBar = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center"
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: "20px"
 };
 
 const nav = {
@@ -659,26 +683,41 @@ const nav = {
 
 const navLink = {
   textDecoration: "none",
-  color: "white"
+  color: "white",
+  background:
+    "rgba(255,255,255,0.15)",
+  padding: "10px 18px",
+  borderRadius: "12px",
+  fontWeight: "600"
 };
 
 const formBox = {
-  marginBottom: "30px"
+  background:
+    "rgba(255,255,255,0.12)",
+  padding: "25px",
+  borderRadius: "20px",
+  marginBottom: "30px",
+  width: "100%",
+  boxSizing: "border-box"
 };
 
 const inputGrid = {
   display: "grid",
   gridTemplateColumns:
-    "repeat(auto-fit,minmax(250px,1fr))",
-  gap: "20px"
+    "repeat(auto-fit, minmax(250px,1fr))",
+  gap: "20px",
+  marginBottom: "20px",
+  width: "100%"
 };
 
 const input = {
   padding: "14px",
   borderRadius: "12px",
   border: "none",
+  outline: "none",
   fontSize: "18px",
-  width: "100%"
+  width: "100%",
+  boxSizing: "border-box"
 };
 
 const primaryBtn = {
@@ -688,6 +727,7 @@ const primaryBtn = {
   border: "none",
   padding: "12px 22px",
   borderRadius: "12px",
+  fontWeight: "bold",
   cursor: "pointer",
   marginTop: "10px"
 };
@@ -698,7 +738,8 @@ const deleteBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  marginRight: "10px"
+  marginRight: "10px",
+  cursor: "pointer"
 };
 
 const editBtn = {
@@ -707,7 +748,7 @@ const editBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  marginRight: "10px"
+  cursor: "pointer"
 };
 
 const viewBtn = {
@@ -715,17 +756,20 @@ const viewBtn = {
   color: "white",
   border: "none",
   padding: "10px 16px",
-  borderRadius: "10px"
+  borderRadius: "10px",
+  marginLeft: "10px",
+  cursor: "pointer"
 };
 
 const heading = {
-  fontSize: "35px"
+  fontSize: "35px",
+  marginBottom: "20px"
 };
 
 const eventGrid = {
   display: "grid",
   gridTemplateColumns:
-    "repeat(auto-fit,minmax(300px,1fr))",
+    "repeat(auto-fit, minmax(300px,1fr))",
   gap: "20px"
 };
 
@@ -745,11 +789,13 @@ const bookingCard = {
 
 const cardTop = {
   display: "flex",
-  justifyContent: "space-between"
+  justifyContent: "space-between",
+  alignItems: "center"
 };
 
 const badge = {
   background: "#f59e0b",
+  color: "white",
   padding: "6px 12px",
   borderRadius: "30px"
 };
