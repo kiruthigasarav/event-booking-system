@@ -1,13 +1,8 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback
-} from "react";
-
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
-  Route,
+ Route,
   Link
 } from "react-router-dom";
 
@@ -42,7 +37,7 @@ function EventsPage({ user }) {
 
   /* ================= LOAD EVENTS ================= */
 
-  const loadEvents = useCallback(() => {
+  const loadEvents = () => {
 
     fetch(`${API}/events`)
       .then((res) => res.json())
@@ -50,12 +45,11 @@ function EventsPage({ user }) {
       .catch((err) => {
         console.log(err);
       });
-
-  }, []);
+  };
 
   useEffect(() => {
     loadEvents();
-  }, [loadEvents]);
+  }, []);
 
   /* ================= ADD EVENT ================= */
 
@@ -497,7 +491,6 @@ function BookingsPage({ user }) {
     </div>
   );
 }
-
 /* ================= APP ================= */
 
 function App() {
