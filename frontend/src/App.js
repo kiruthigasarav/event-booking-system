@@ -41,11 +41,15 @@ function EventsPage({ user }) {
 
   /* ================= LOAD EVENTS ================= */
 
-  const loadEvents = useCallback(() => {
+  /* ================= LOAD EVENTS ================= */
+
+const loadEvents = useCallback(() => {
 
   fetch(`${API}/events`)
     .then((res) => res.json())
-    .then((data) => setEvents(data))
+    .then((data) => {
+      setEvents(data);
+    })
     .catch((err) => {
       console.log(err);
     });
@@ -57,17 +61,6 @@ useEffect(() => {
   loadEvents();
 
 }, [loadEvents]);
-
-useEffect(() => {
-
-  loadEvents();
-
-}, [loadEvents]);
-
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
   /* ================= ADD EVENT ================= */
 
   const addEvent = () => {
