@@ -179,6 +179,110 @@ app.post("/login", (req, res) => {
     );
 });
 
+/* ================= GOOGLE LOGIN ================= */
+
+app.post("/google-login", (req, res) => {
+
+    const { name, email } = req.body;
+
+    const checkUser =
+        "SELECT * FROM users WHERE email=?";
+
+    db.query(
+        checkUser,
+        [email],
+        (err, result) => {
+
+            if (err) {
+
+                console.log(err);
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Database error"
+                });
+            }
+
+            /* USER EXISTS */
+
+            if (result.length > 0) {
+
+                const user = result[0];
+
+                const token = jwt.sign(
+                    {
+                        id: user.id,
+                        role: user.role
+                    },
+                    process.env.JWT_SECRET,
+                    {
+                        expiresIn: "1d"
+                    }
+                );
+
+                return res.json({
+                    success: true,
+                    token,
+                    user
+                });
+            }
+
+            /* CREATE NEW USER */
+
+            const sql =
+                `INSERT INTO users
+                (name, email, password, role)
+                VALUES (?, ?, ?, ?)`;
+
+            db.query(
+                sql,
+                [
+                    name,
+                    email,
+                    "google-login",
+                    "attendee"
+                ],
+                (err2, result2) => {
+
+                    if (err2) {
+
+                        console.log(err2);
+
+                        return res.status(500).json({
+                            success: false,
+                            message:
+                                "Google login failed"
+                        });
+                    }
+
+                    const newUser = {
+                        id: result2.insertId,
+                        name,
+                        email,
+                        role: "attendee"
+                    };
+
+                    const token = jwt.sign(
+                        {
+                            id: newUser.id,
+                            role: newUser.role
+                        },
+                        process.env.JWT_SECRET,
+                        {
+                            expiresIn: "1d"
+                        }
+                    );
+
+                    res.json({
+                        success: true,
+                        token,
+                        user: newUser
+                    });
+                }
+            );
+        }
+    );
+});
 /* ================= EVENTS ================= */
 
 // GET EVENTS

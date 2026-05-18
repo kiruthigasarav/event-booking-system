@@ -7,8 +7,10 @@ import React, {
 import {
   BrowserRouter,
   Routes,
-  Route,
-  Link
+ Route,
+  Link,
+  Navigate,
+  useNavigate
 } from "react-router-dom";
 
 import Login from "./Login";
@@ -46,7 +48,14 @@ function EventsPage({ user }) {
 
     fetch(`${API}/events`)
       .then((res) => res.json())
-      .then((data) => setEvents(data))
+      .then((data) => {
+
+        if (Array.isArray(data)) {
+          setEvents(data);
+        } else {
+          setEvents([]);
+        }
+      })
       .catch((err) => {
         console.log(err);
       });
@@ -60,6 +69,11 @@ function EventsPage({ user }) {
   /* ================= ADD EVENT ================= */
 
   const addEvent = () => {
+
+    if (!user?.id) {
+      alert("User ID missing");
+      return;
+    }
 
     fetch(`${API}/add-event`, {
       method: "POST",
@@ -85,6 +99,9 @@ function EventsPage({ user }) {
           venue: "",
           total_seats: ""
         });
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -112,7 +129,7 @@ function EventsPage({ user }) {
 
     setNewEvent({
       title: event.title,
-      date: event.date,
+      date: event.date?.split("T")[0] || "",
       venue: event.venue,
       total_seats: event.total_seats
     });
@@ -121,6 +138,8 @@ function EventsPage({ user }) {
   /* ================= UPDATE EVENT ================= */
 
   const updateEvent = () => {
+
+    if (!editingEvent) return;
 
     fetch(
       `${API}/update-event/${editingEvent.id}`,
@@ -153,15 +172,24 @@ function EventsPage({ user }) {
 
   /* ================= VIEW BOOKINGS ================= */
 
-  const viewBookings = (organizerId) => {
+  const viewBookings = () => {
+
+    if (!user?.id) {
+      alert("Organizer ID missing");
+      return;
+    }
 
     fetch(
-      `${API}/organizer-bookings/${organizerId}`
+      `${API}/organizer-bookings/${user.id}`
     )
       .then((res) => res.json())
       .then((data) => {
 
-        setOrganizerBookings(data);
+        if (Array.isArray(data)) {
+          setOrganizerBookings(data);
+        } else {
+          setOrganizerBookings([]);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -177,6 +205,15 @@ function EventsPage({ user }) {
     if (!seat) {
 
       alert("Enter seat number");
+
+      return;
+    }
+
+    if (!user?.id) {
+
+      alert(
+        "Login issue. Please login again."
+      );
 
       return;
     }
@@ -197,6 +234,9 @@ function EventsPage({ user }) {
       .then((data) => {
 
         alert(data.message);
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -204,8 +244,8 @@ function EventsPage({ user }) {
 
     <div>
 
-      {(user.role === "admin" ||
-        user.role === "organizer") && (
+      {(user?.role === "admin" ||
+        user?.role === "organizer") && (
 
         <div style={formBox}>
 
@@ -312,13 +352,14 @@ function EventsPage({ user }) {
             </div>
 
             <p style={dateText}>
-              {event.date}
+              {new Date(event.date)
+                .toLocaleDateString()}
             </p>
 
-            {(user.role === "admin" ||
+            {(user?.role === "admin" ||
 
-              (user.role === "organizer" &&
-                event.organizer_id === user.id)
+              (user?.role === "organizer" &&
+                Number(event.organizer_id) === Number(user.id))
 
             ) && (
 
@@ -342,14 +383,12 @@ function EventsPage({ user }) {
                   Edit
                 </button>
 
-                {user.role ===
+                {user?.role ===
                   "organizer" && (
 
                   <button
                     style={viewBtn}
-                    onClick={() =>
-                      viewBookings(user.id)
-                    }
+                    onClick={viewBookings}
                   >
                     View Bookings
                   </button>
@@ -358,7 +397,7 @@ function EventsPage({ user }) {
               </div>
             )}
 
-            {user.role === "attendee" && (
+            {user?.role === "attendee" && (
 
               <div
                 style={{
@@ -398,8 +437,7 @@ function EventsPage({ user }) {
 
       </div>
 
-      {user.role === "organizer" &&
-        organizerBookings.length > 0 && (
+      {user?.role === "organizer" && (
 
         <div style={{ marginTop: "40px" }}>
 
@@ -409,29 +447,33 @@ function EventsPage({ user }) {
 
           <div style={eventGrid}>
 
-            {organizerBookings.map((b) => (
+            {organizerBookings.length === 0 ? (
+              <p>No bookings yet</p>
+            ) : (
+              organizerBookings.map((b) => (
 
-              <div
-                key={b.id}
-                style={bookingCard}
-              >
+                <div
+                  key={b.id}
+                  style={bookingCard}
+                >
 
-                <h3>{b.title}</h3>
+                  <h3>{b.title}</h3>
 
-                <p>
-                  User : {b.name}
-                </p>
+                  <p>
+                    User : {b.name}
+                  </p>
 
-                <p>
-                  Email : {b.email}
-                </p>
+                  <p>
+                    Email : {b.email}
+                  </p>
 
-                <div style={seatBadge}>
-                  Seat : {b.seat_number}
+                  <div style={seatBadge}>
+                    Seat : {b.seat_number}
+                  </div>
+
                 </div>
-
-              </div>
-            ))}
+              ))
+            )}
 
           </div>
 
@@ -451,18 +493,25 @@ function BookingsPage({ user }) {
 
   useEffect(() => {
 
+    if (!user?.id) return;
+
     fetch(
       `${API}/my-bookings/${user.id}`
     )
       .then((res) => res.json())
-      .then((data) =>
-        setBookings(data)
-      )
+      .then((data) => {
+
+        if (Array.isArray(data)) {
+          setBookings(data);
+        } else {
+          setBookings([]);
+        }
+      })
       .catch((err) => {
         console.log(err);
       });
 
-  }, [user.id]);
+  }, [user]);
 
   return (
 
@@ -474,23 +523,174 @@ function BookingsPage({ user }) {
 
       <div style={eventGrid}>
 
-        {bookings.map((b, i) => (
+        {bookings.length === 0 ? (
+          <p>No bookings found</p>
+        ) : (
+          bookings.map((b, i) => (
 
-          <div
-            key={i}
-            style={bookingCard}
-          >
+            <div
+              key={i}
+              style={bookingCard}
+            >
 
-            <h3>{b.title}</h3>
+              <h3>{b.title}</h3>
 
-            <p>{b.venue}</p>
+              <p>{b.venue}</p>
 
-            <div style={seatBadge}>
-              Seat : {b.seat_number}
+              <div style={seatBadge}>
+                Seat : {b.seat_number}
+              </div>
+
+            </div>
+          ))
+        )}
+
+      </div>
+
+    </div>
+  );
+}
+
+/* ================= APP CONTENT ================= */
+
+function AppContent() {
+
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(() => {
+
+    const storedUser =
+      localStorage.getItem("user");
+
+    return storedUser
+      ? JSON.parse(storedUser)
+      : null;
+  });
+
+  useEffect(() => {
+
+    if (user) {
+      navigate("/");
+    }
+
+  }, [user, navigate]);
+
+  const logout = () => {
+
+    localStorage.removeItem("user");
+
+    localStorage.removeItem("token");
+
+    setUser(null);
+
+    navigate("/login");
+  };
+
+  return (
+
+    <div style={mainContainer}>
+
+      <div style={overlay}>
+
+        {user && (
+
+          <div style={topBar}>
+
+            <h1 style={mainTitle}>
+              Event Booking System
+            </h1>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "15px",
+                alignItems: "center"
+              }}
+            >
+
+              <div
+                style={{
+                  background:
+                    "rgba(255,255,255,0.15)",
+                  padding: "10px 18px",
+                  borderRadius: "12px"
+                }}
+              >
+                {user.name} ({user.role})
+              </div>
+
+              <button
+                style={deleteBtn}
+                onClick={logout}
+              >
+                Logout
+              </button>
+
             </div>
 
           </div>
-        ))}
+        )}
+
+        {user && (
+          <nav style={nav}>
+
+            <Link
+              style={navLink}
+              to="/"
+            >
+              Events
+            </Link>
+
+            <Link
+              style={navLink}
+              to="/bookings"
+            >
+              My Bookings
+            </Link>
+
+          </nav>
+        )}
+
+        <Routes>
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <EventsPage
+                  user={user}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/bookings"
+            element={
+              <ProtectedRoute>
+                <BookingsPage
+                  user={user}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/" />}
+          />
+
+        </Routes>
 
       </div>
 
@@ -502,139 +702,12 @@ function BookingsPage({ user }) {
 
 function App() {
 
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
-
   return (
 
     <BrowserRouter>
-
-      <div style={mainContainer}>
-
-        <div style={overlay}>
-
-          {user && (
-
-            <div style={topBar}>
-
-              <h1 style={mainTitle}>
-                Event Booking System
-              </h1>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "15px",
-                  alignItems: "center"
-                }}
-              >
-
-                <div
-                  style={{
-                    background:
-                      "rgba(255,255,255,0.15)",
-                    padding: "10px 18px",
-                    borderRadius: "12px"
-                  }}
-                >
-                  {user.name} (
-                  {user.role})
-                </div>
-
-                <button
-                  style={deleteBtn}
-                  onClick={() => {
-
-                    localStorage.removeItem(
-                      "user"
-                    );
-
-                    localStorage.removeItem(
-                      "token"
-                    );
-
-                    window.location.href =
-                      "/login";
-                  }}
-                >
-                  Logout
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-          <nav style={nav}>
-
-            <Link
-              style={navLink}
-              to="/"
-            >
-              Events
-            </Link>
-
-            {(user?.role ===
-              "attendee" ||
-
-              user?.role ===
-                "admin" ||
-
-              user?.role ===
-                "organizer") && (
-
-              <Link
-                style={navLink}
-                to="/bookings"
-              >
-                My Bookings
-              </Link>
-            )}
-
-          </nav>
-
-          <Routes>
-
-            <Route
-              path="/login"
-              element={<Login />}
-            />
-
-            <Route
-              path="/register"
-              element={<Register />}
-            />
-
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <EventsPage
-                    user={user}
-                  />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/bookings"
-              element={
-                <ProtectedRoute>
-                  <BookingsPage
-                    user={user}
-                  />
-                </ProtectedRoute>
-              }
-            />
-
-          </Routes>
-
-        </div>
-
-      </div>
-
+      <AppContent />
     </BrowserRouter>
+
   );
 }
 
@@ -748,7 +821,8 @@ const editBtn = {
   border: "none",
   padding: "10px 16px",
   borderRadius: "10px",
-  cursor: "pointer"
+  cursor: "pointer",
+  marginRight: "10px"
 };
 
 const viewBtn = {
